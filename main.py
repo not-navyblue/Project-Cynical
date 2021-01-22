@@ -633,7 +633,7 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
             return
         
         try:
-            f = open(constants.CurrentDirectory + "/data/highscores.mhjson", "x")
+            f = open(constants.CurrentDirectory + "/data/highscores.mhjson", "w")
             f.write('{\n' + f"\t0: {DeveloperID}\n" + '}')
             f.close()
             
