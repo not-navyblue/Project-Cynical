@@ -527,9 +527,9 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
         elif challengee.id == 170353794134179840 and challengee.status == discord.Status.offline:
             await ctx.send(f"{ctx.author.mention}, you can't do that, that's against the rules!")
             return # If Creo's challenged but he's offline
-        #elif ctx.author.id == challengee.id: # If the challenger tries to battle itself
-        #    await ctx.send(f"{ctx.author.mention}, you can't battle yourself!")
-        #    return
+        elif ctx.author.id == challengee.id: # If the challenger tries to battle itself
+            await ctx.send(f"{ctx.author.mention}, you can't battle yourself!")
+            return
         elif checkIfInAnyBattle(challengee, bot): # If a challengee is already in a battle
             await ctx.send(f"{ctx.author.mention}, please challenge another user. They are already in a battle!")
             return
