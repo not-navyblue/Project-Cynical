@@ -627,12 +627,20 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
     
     @commands.command(hidden = True)
     @Checks.is_developer(bot)
-    async def testscore(self, ctx):
+    async def resetscore(self, ctx):
         if not isServerValid(ctx):
             print(f"{ctx.author} attempted to send a command on non-whitelisted server \"{ctx.guild}\"")
             return
         
-        battles.setHighScore(0, battles.Battle(ctx.channel.id, [await bot.fetch_user(DeveloperID), await bot.fetch_user(DeveloperID)]))
+        try:
+            f = open(constants.CurrentDirectory + "/data/highscores.mhjson", "x")
+            f.write('{\n' + f"\t0: {DeveloperID}\n" + '}')
+            f.close()
+            
+            await ctx.send("Reset successful.")
+        except OSError:
+            await ctx.send("Reset failed.")
+            return
     
 
 # Event Overrides and Cog Registrations (Bot Setup, Part 3 of 4)
