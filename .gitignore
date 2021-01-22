@@ -1,0 +1,4 @@
+.env
+battleOld.py
+data/
+__pycache__/

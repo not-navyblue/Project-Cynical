@@ -1,0 +1,75 @@
+***Pre-Release 0***
+-> Implemented first foundation of Card Battle
+-> Implemented 6 first Universal Cards and 2 first Special Cards
+-> Implemented all needed commands
+-> Implemented emote response
+
+***Pre-Release 1***
+-> Added alias for `c.shutdown`
+-> Implemented changelog (I need to stop implementing changelogs after release)
+
+***Pre-Release 2***
+-> Implemented and modified 2 new Cards: **Poison Target** and **Healing Potion**
+-> Implemented additional effect of Protection-inducing Cards' where successive use halves the Card's base accuracy (this was somehow forgotten, whoops)
+-> Implemented additional effect of Card "Jumpscare" where it fails if attempted to be used successively (this was also forgotten, oopsies)
+-> Modified foundation of Card Battle
+-> Modified changelog
+-> Reset highscores.list to default values
+-> Fixed a bug that `playerFlinched` variable is not reset to default values when resetting variables after a battle
+
+***Pre-Release 3***
+-> Fixed a nasty bug which user's HP drops to exactly 7 HP after poison has been cured after a number of turns
+-> Made many changes to the outcome messages and some texts to prevent confusion with same displayed names but different usernames/discriminators
+
+***Pre-Release 4***
+-> Fixed an exploitable bug which Healing Potion can theoretically heal the user beyond the maximum HP
+-> Made yet many more changes to the outcome messages
+
+***Alpha 1.0 - QoL Update 1***
+[Suggested by SanskariHydra#7785]
+-> Added Cards' respective energy costs besides the Cards' names when using `c.list`
+-> Implemented `c.resign` which ends the battle with an opposition victory.
+[Self-Implemented]
+-> Implemented and modified a new Universal Card: **Warn**
+-> Implemented and modified a new Special Card: **The Eclipse** (ID: 1003)
+-> Implemented the ability to select a Card by the position of said Card in the user's deck of Cards
+-> Implemented `c.changelog` (yet another forgotten feature)
+-> Buffed the accuracy stat change of Card "Potion of Invisibility" (+10% instead of +5%)
+-> Increased chance of getting a Special Card if the player does not have a Special Card specific to them (20% instead of 10%)
+-> The defending player now has 20% chance of regaining 2 Energy instead of just 1 Energy
+-> The battle summary screen now shows the Cards' positions in each player's decks
+-> Updated `c.use` and the message that gets sent at the start of any player's turn
+-> Fixed a bug (accidentally executed by SanskariHydra#7785) which the bot suddenly displays a message while it is preparing to shutdown
+-> Fixed an unknown potential bug
+
+***Alpha 1.1 - QoL Update 2***
+-> Implemented the ability for the user to see their own scores in `c.leaderboards` if their total scores are not in the Top 10
+-> Added `c.changelog` in the help embed
+-> Added optional argument for `c.shutdown`
+-> Split the changelog for Alpha 1.2 because Discord complained about it being too long to fit in
+-> Fixed a series of incredibly notorious bugs involving the ability to select a Card by its position in the player's deck
+-> Fixed yet another series of bugs regarding the leaderboards embed showing the high scores incorrectly and other bugs
+-> Fixed a bug that `c.resign` didn't work
+-> Fixed a bug that `c.leaderboards` would either not display the high scores embed or just display some random string characters
+
+***Beta 1.0 - Rewritten Update***
+-> Rewritten the code, not necessarily from the ground up though (lol)
+-> Implemented two new Special Cards: **Guard Break** and **Limit Break**
+-> Implemented and modified three new Universal Cards: **Mute**, **Ban**, and **Push**
+-> Implemented Card Classifications (Offensive, Defensive, Miscellaneous) so you can be sure you always have at least one of each
+-> Implemented support for multiple battles -- but not in the same channels (Inspired by the late Pokecord)
+-> Implemented an automatic battle stopper when both parties skipped 2 turns each (a total of 4 turns) in a row (Inspired by Poketwo)
+-> Increased the chance of getting a Special Card (40% instead of 20%)
+-> Increased the number of Cards a player's Deck can have (8 instead of 6)
+-> The defending player now has 10% chance of regaining 3 Energy instead of 1 or 2 Energy
+-> Merged the changelog for Alpha 1.2
+-> Greatly enhanced the `c.help` command
+=-> Grouped together the commands in appropriate categories
+=-> Implemented support for more information about a specific command
+-> Redesigned the `c.moveinfo` and the battle summary embeds
+-> Added aliases for most commands
+-> Greatly modified the changelog
+-> Removed the bot's emote response (wasn't really necessary)
+-> Fixed the energy costs with Cards **Psychic Protect** and **The Ban Hammer**
+-> Fixed the chances that the second player would get a Special Card (it was 10% instead of 20%/40%, sorry)
+-> Fixed many bugs that have been encountered during the program rewrite
