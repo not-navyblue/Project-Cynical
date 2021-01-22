@@ -45,17 +45,21 @@ def setChangelog(bot: Bot):
 
 def createHighScoresFile():
     try:
-        os.mkdir(constants.CurrentDirectory + "\\data")
+        os.mkdir(constants.CurrentDirectory + "/data")
     except FileExistsError:
+        pass
+    except OSError:
         pass
     
     try:
-        f = open(constants.CurrentDirectory + "\\data\\highscores.mhjson", "x")
+        f = open(constants.CurrentDirectory + "/data/highscores.mhjson", "x")
         f.write('{\n' + f"\t0: {DeveloperID}\n" + '}')
         f.close()
         
         print("highscores.mhjson created.")
     except FileExistsError:
+        print("highscores.mhjson loaded.")
+    except OSError:
         print("highscores.mhjson loaded.")
         
 def isServerValid(ctx):

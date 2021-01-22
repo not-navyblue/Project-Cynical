@@ -969,7 +969,7 @@ def increased_criticalHitChance():
     return random.randint(0, 100) <= 40
 
 def setHighScore(number: int, battle: Battle, changeScore: int = 1):
-    f = open(constants.CurrentDirectory + "\\data\\highscores.mhjson", "r", encoding = "utf-8")
+    f = open(constants.CurrentDirectory + "/data/highscores.mhjson", "r", encoding = "utf-8")
     lis = []
     lis2 = list()
     lis3 = list()
@@ -1009,7 +1009,7 @@ def setHighScore(number: int, battle: Battle, changeScore: int = 1):
                 isFound = True
         y += 1
         
-    f = open(constants.CurrentDirectory + "\\data\\highscores.mhjson", "w", encoding = "utf-8")
+    f = open(constants.CurrentDirectory + "/data/highscores.mhjson", "w", encoding = "utf-8")
     f.write(stri)
     f.close()
     return
@@ -1017,7 +1017,7 @@ def setHighScore(number: int, battle: Battle, changeScore: int = 1):
 async def getHighScores(client: discord.Client, requested: discord.User):
     lis = []
     embed = discord.Embed(title = "CCGbot High Scores")
-    f = open(constants.CurrentDirectory + "\\data\\highscores.mhjson", "r", encoding = "utf-8")
+    f = open(constants.CurrentDirectory + "/data/highscores.mhjson", "r", encoding = "utf-8")
     
     for g in f.readlines():
         if g != "{\n" and g != "}":
