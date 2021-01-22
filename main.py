@@ -621,6 +621,15 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
         if ctx.author in battle.fighters:
             await battle_out(ctx, battle)
     
+    @commands.command(hidden = True)
+    @Checks.is_developer(bot)
+    async def testscore(self, ctx):
+        if not isServerValid(ctx):
+            print(f"{ctx.author} attempted to send a command on non-whitelisted server \"{ctx.guild}\"")
+            return
+        
+        battles.setHighScore(0, battles.Battle(ctx.channel.id, [await bot.fetch_user(DeveloperID), await bot.fetch_user(DeveloperID)]))
+    
 
 # Event Overrides and Cog Registrations (Bot Setup, Part 3 of 4)
 # Event Overrides
