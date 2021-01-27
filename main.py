@@ -22,6 +22,9 @@ else:
     print("Failed to load environment variables.")
     quit(1)
 
+# Global Variables
+isAlpha = False
+
 # Customized Bot class (subclass of discord.ext.commands.Bot)
 class Bot(commands.Bot):
     def __init__(self, command_prefix, help_command = commands.bot._default, description = None, **options):
@@ -174,10 +177,13 @@ async def battle_in(ctx: commands.Context, cardUsed: str, battle: Battle):
 async def battle_out(ctx: commands.Context, battle: Battle):
     turn = battle.playerTurn
     players = battle.fighters
-    
     embed = battles.displayBattle(battle)
     
-    embed.set_footer(icon_url = discord.User.avatar_url_as(players[turn], size = 32), text = f"{players[turn]} made a move!")
+    if battle.turns > 1:
+        embed.set_footer(icon_url = discord.User.avatar_url_as(ctx.author, size = 64), text = f"{ctx.author} has made a move!")
+    else:
+        embed.set_footer(icon_url = discord.User.avatar_url_as(ctx.author, size = 64), text = f"Command requested by {ctx.author}")
+    
     embed.colour = random.randint(0, 0xffffff)
         
     try:
@@ -202,7 +208,7 @@ async def battle_out(ctx: commands.Context, battle: Battle):
         battles.setHighScore(battle.winNum, battle)
         deleteBattle(ctx.channel, bot)
     else:
-        await ctx.send(f"It is now {players[turn].mention} (Battler {add(turn)})'s turn.\nUse `c.use <Card name / Deck position>` to use a Card.\nUse `c.skip` to pass a turn.\nUse `c.surrender` to surrender in this battle.\nUse `c.summary` to review the battle summary.")
+        await ctx.send(f"It is now {players[turn].mention} (Battler {add(turn)})'s turn.\nUse `c.use <Card name / Deck position>` to use a Card.\nUse `c.refresh` to pass a turn.\nUse `c.surrender` to surrender in this battle.\nUse `c.summary` to view the battle summary again.")
 
 async def challenge_timeout(ctx: commands.Context, fighters: list, bot: Bot):
     await asyncio.sleep(15)
@@ -221,10 +227,15 @@ subtract = lambda a, b = 1: a - b
 
 # Bot Initialization, Bot-related Variable Declarations, and File-related Function Executions
 # (Bot Setup, Part 1 of 4)
-BotToken = os.getenv("SOYDEVELOPER")
+if os.getenv("ALPHATEST") != None and isAlpha:
+    BotToken = os.getenv("ALPHATEST")
+    print("Alpha Bot Token loaded.")
+else:
+    BotToken = os.getenv("SOYDEVELOPER")
+    print("Production Bot Token loaded.")
 DeveloperID = int(os.getenv("developerID"))
 
-bot = Bot(command_prefix = "c.", status = discord.Status.idle)
+bot = Bot(command_prefix = lambda _, message: message.content[:2] if message.content.lower().startswith('c.') else 'c.', status = discord.Status.idle)
 bot.activity = discord.Game("Project Cynical")
 bot.owner_id = DeveloperID
 bot.remove_command('help')
@@ -261,7 +272,7 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
                     isHidden = getattr(a, "hidden", False)
                 
                     if not isHidden:
-                        commandinfo += str("\n**" + str(bot.command_prefix) + str(a) + f"** -> {shortHelp}")
+                        commandinfo += str("\n**c." + str(a) + f"** -> {shortHelp}")
                     else:
                         pass
                     
@@ -296,7 +307,7 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
                 if isHidden:
                     helpMessage += "\n**Note: This is a hidden command. It will not be listed when the list of commands is displayed.**"
                 
-                embed.add_field(name = str(bot.command_prefix) + str(commR), value = f"{helpMessage}\n\nAlias/es: {aliases}\nBelongs to: **{commCat}**")
+                embed.add_field(name = "c." + str(commR), value = f"{helpMessage}\n\nAlias/es: {aliases}\nBelongs to: **{commCat}**")
                 
         try:
             await ctx.send(content = None, embed = embed)
@@ -420,7 +431,7 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
 
         try:
             if random.randint(1, 100) <= 30:
-                await ctx.channel.send(content = random.choice(["Note: Special Cards have 40% chance of being part of a User's hand, except for their respective Users which have their own Special Card automatically added into their hand.", "Note: Cards in each of the player's decks in battle are randomized.", "Note: The ranges of stats of a player are 20 - 200 for Attack & Defense, and 50 - 150 for Accuracy and Evasion."]), embed = embed)
+                await ctx.channel.send(content = random.choice(["Note: Special Cards have a 25% chance of being added to a User's deck, except for their respective Users which have their own Special Card automatically added into their hand.", "Note: Cards in each of the player's decks in battle are randomized.", "Note: The ranges of stats of a player are 20 - 200 for Attack & Defense, and 50 - 150 for Accuracy and Evasion."]), embed = embed)
             else:
                 await ctx.channel.send(content = None, embed = embed)
         except discord.errors.Forbidden:
@@ -578,8 +589,8 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
             if await battle_in(ctx, cardUsed, battle):
                 await battle_out(ctx, battle)
     
-    @commands.command(aliases = ("pass",), hidden = True)
-    async def skip(self, ctx):
+    @commands.command(aliases = ("rest", "restore", "pass", "skip"), hidden = True)
+    async def refresh(self, ctx):
         if not isServerValid(ctx):
             print(f"{ctx.author} attempted to send a command on non-whitelisted server \"{ctx.guild}\"")
             return
@@ -592,7 +603,7 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
         turn = battle.playerTurn
         if ctx.author == battle.fighters[turn]:
             battle.consecutivePass += 1
-            battles.what_happens("pass", battle)
+            battles.what_happens("restore", battle)
             await battle_out(ctx, battle)
     
     @commands.command(aliases = ("resign",), hidden = True, help = "Surrender in a Card Battle. This will result to opposition victory.")

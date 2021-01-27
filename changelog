@@ -1,10 +1,10 @@
-***Pre-Release 0***
+***Pre-Release 0 - The Creation***
 -> Implemented first foundation of Card Battle
 -> Implemented 6 first Universal Cards and 2 first Special Cards
 -> Implemented all needed commands
 -> Implemented emote response
 
-***Pre-Release 1***
+**Pre-Release 1**
 -> Added alias for `c.shutdown`
 -> Implemented changelog (I need to stop implementing changelogs after release)
 
@@ -17,16 +17,16 @@
 -> Reset highscores.list to default values
 -> Fixed a bug that `playerFlinched` variable is not reset to default values when resetting variables after a battle
 
-***Pre-Release 3***
+**Pre-Release 3**
 -> Fixed a nasty bug which user's HP drops to exactly 7 HP after poison has been cured after a number of turns
 -> Made many changes to the outcome messages and some texts to prevent confusion with same displayed names but different usernames/discriminators
 
-***Pre-Release 4***
+**Pre-Release 4**
 -> Fixed an exploitable bug which Healing Potion can theoretically heal the user beyond the maximum HP
 -> Made yet many more changes to the outcome messages
 
 ***Alpha 1.0 - QoL Update 1***
-[Suggested by SanskariHydra#7785]
+[Suggested by SanskariHydra]
 -> Added Cards' respective energy costs besides the Cards' names when using `c.list`
 -> Implemented `c.resign` which ends the battle with an opposition victory.
 [Self-Implemented]
@@ -73,3 +73,15 @@
 -> Fixed the energy costs with Cards **Psychic Protect** and **The Ban Hammer**
 -> Fixed the chances that the second player would get a Special Card (it was 10% instead of 20%/40%, sorry)
 -> Fixed many bugs that have been encountered during the program rewrite
+
+**Beta 1.1 - Small Update 1**
+-> Implemented a new Universal Card: **Early Assault**
+-> Made the battle summary screen to show the current turn of the battle
+-> Changed `c.skip` to `c.restore`, with an implemented energy restoration effect for the player [Suggested by MarwanPGX]
+=-> There is a chance that the player can regenerate 4 to 5 Energy as opposed to a maximum of 3 Energy normally
+-> Made the bot's command prefix case insensitive [Thanks CriticalElement :)]
+-> Slightly modified the changelog
+-> Fixed a glitch which the chances of a Special Card added on one's deck is much lower than what was intended
+=-> Because of this fix, the chances of a Special Card are now reduced (25% instead of 40%)
+-> Fixed a bug which using the **Healing Potion** Card while not being poisoned does not show the difference
+-> Fixed a bug that the footer displays the wrong avatar and username after finishing a turn

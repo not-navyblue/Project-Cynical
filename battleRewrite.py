@@ -37,6 +37,7 @@ class Battle:
         self.pEnergyDeduct = ["0", "0"]
                                          # set 1  #  # set 2  #  # set 3  #  # set 4  #
         self.playerTurn = random.choice([0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1])
+        self.turns = 1
         
         self.outcome = "The battle has just begun!"
         
@@ -46,14 +47,21 @@ class Battle:
 def initBattle(battle: Battle):
     random.seed(random.randint(-10737418240, 10737418235))
     
-    regularCardChance = 60 # Chances that a player will get a non-Special Card.
+    regularCardChance = 75 # Chances that a player will get a non-Special Card.
     x = ""; doesNotExist = True; z = 0
     battle.playerTurn = random.randint(0, 1)
     battle.isBattling = True
+    SpecialCards1 = []
     
     offC = 0
     defC = 0
     misC = 0
+    
+    for a in cards.SpecialCards_:
+        if a == None:
+            pass
+        else:
+            SpecialCards1.append(a)
     
     while not (offC > 0 and defC > 0 and misC > 0):
         offC = 0
@@ -100,7 +108,7 @@ def initBattle(battle: Battle):
                 doesNotExist = True
             else:
                 while doesNotExist:
-                    x = random.choice(cards.SpecialCards_)
+                    x = random.choice(SpecialCards1)
 
                     for y in battle.playerCards[0]:
                         if y == x:
@@ -173,7 +181,7 @@ def initBattle(battle: Battle):
                 doesNotExist = True
             else:
                 while doesNotExist:
-                    x = random.choice(cards.SpecialCards_)
+                    x = random.choice(SpecialCards1)
 
                     for y in battle.playerCards[1]:
                         if y == x:
@@ -250,7 +258,7 @@ def displayBattle(battle: Battle):
         battle.endBattle = True
         battle.outcome += "\n-> The battle has automatically ended!"
     
-    embed = discord.Embed(title = "Card Battle")
+    embed = discord.Embed(title = f"Card Battle (Turn {battle.turns})")
     embed.colour = random.randint(0, 0xffffff)
     
     while a < 2:
@@ -314,7 +322,6 @@ def checkIfValid(card, battle: Battle):
             if len(battle.playerBannedCards[battle.playerTurn]) > 0:
                 a = 0
                 for y in battle.playerBannedCards[battle.playerTurn]:
-                    print(y[a] == card)
                     if y[a] == card:
                         return False
                     a += 1
@@ -338,8 +345,6 @@ def checkIfValid(card, battle: Battle):
         else:
             s = cards.AllCards[card].energycost
         
-        print(card)
-        print(cards.AllCards[card].name + str(battle.playerEnergy[battle.playerTurn] - s))
         if battle.playerEnergy[battle.playerTurn] - s >= 0:
             return valid
         else:
@@ -355,6 +360,7 @@ def what_happens(used: str, battle: Battle):
     defendingPlayer = int()
     battle.pHPDeduct = ["0", "0"]
     battle.pEnergyDeduct = ["0", "0"]
+    battle.turns += 1
     damage = 0
     pHPDtemp = 0
     
@@ -569,8 +575,11 @@ def what_happens(used: str, battle: Battle):
                     if battle.playerStatus[battle.playerTurn][0] == "poison":
                         if random.randint(1, 100) <= 30:
                             battle.playerStatus[battle.playerTurn] == ["none", 0]
-                            battle.pHPDeduct[battle.playerTurn] += "+60"
+                            battle.pHPDeduct[battle.playerTurn] = "+60"
                             battle.outcome += f" The potion also cured {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) of their poisoning!"
+                    else:
+                        battle.pHPDeduct[battle.playerTurn] = "+60"
+                        battle.outcome += f" The potion also cured {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) of their poisoning!"
             
             elif cardID == 8: # Warn
                 if battle.playerStatus[defendingPlayer][0] == "blocked" or battle.playerStatus[defendingPlayer][0] == "protected" or battle.playerStatus[defendingPlayer][0] == "protected2":
@@ -591,7 +600,7 @@ def what_happens(used: str, battle: Battle):
                     battle.playerBannedCards[defendingPlayer].append([battle.lastUsedCard[defendingPlayer], randomDuration])
                     
                     battle.outcome += f"\n!tempmute {battle.fighters[defendingPlayer].mention} {randomDuration}d the The"
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) has muted {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}), disabling their Card \"{battle.lastUsedCard[defendingPlayer]}\", preventing them from using it for {randomDuration} turns!"
+                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) has muted {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}), disabling their Card \"{battle.lastUsedCard[defendingPlayer].title()}\", preventing them from using it for {randomDuration} turns!"
             
             elif cardID == 10: # Ban
                 if battle.lastUsedCard[defendingPlayer] == None:
@@ -605,7 +614,7 @@ def what_happens(used: str, battle: Battle):
                     battle.playerBannedCards[battle.playerTurn].append(["ban", -1])
             
                 battle.outcome += f"\n!ban {battle.fighters[defendingPlayer].mention} the The"
-                battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) has banned {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}), leaving them unable to move for one turn and disabling their Card {battle.lastUsedCard[defendingPlayer]} for use for the rest of the battle! This Card is also now disabled for use for the same duration."
+                battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) has banned {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}), leaving them unable to move for one turn and disabling their Card {battle.lastUsedCard[defendingPlayer].title()} for use for the rest of the battle! This Card is also now disabled for use for the same duration."
 
             elif cardID == 11: # Push
                 if battle.playerStatus[defendingPlayer][0] == "protected2":
@@ -622,6 +631,37 @@ def what_happens(used: str, battle: Battle):
                         battle.outcome += f"on the edge of a cliff and fell, sustaining {damage} HP damage!"
                     else:
                         battle.outcome += f"but nothing happened!"
+            
+            elif cardID == 12: # Early Assault
+                if battle.playerStatus[defendingPlayer][0] == "protected2":
+                    battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) protected themself from the attack!"
+                else:
+                    if battle.turns > 6 and battle.turns < 18:
+                        if normal_criticalHitChance():
+                            damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                            battle.outcome += "\n-> **Critical hit!**"
+                        else:
+                            damage = damageCalc(cardUsed.power, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                    elif battle.turns <= 6:
+                        if normal_criticalHitChance():
+                            damage = damageCalc((cardUsed.power * 2) * 1.5, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                            battle.outcome += "\n-> **Critical hit!**"
+                        else:
+                            damage = damageCalc((cardUsed.power * 2), battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                    elif battle.turns >= 18:
+                        if normal_criticalHitChance():
+                            damage = damageCalc((cardUsed.power * 0.5) * 1.5, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                            battle.outcome += "\n-> **Critical hit!**"
+                        else:
+                            damage = damageCalc((cardUsed.power * 0.5), battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                    
+                    if battle.playerStatus[defendingPlayer][0] == "protected":
+                        damage *= 0.15
+                        battle.playerHP -= damage
+                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) immediately attacked {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}), but {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]})'s **Protection** reduced the damage and it only dealt {damage} HP damage!"
+                    else:
+                        battle.playerHP -= damage
+                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) immediately attacked {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}), which dealt {damage} HP damage!"
             
         elif not noUse:
             battle.outcome += "\n-> The Card failed the accuracy check and missed!"
@@ -847,8 +887,17 @@ def what_happens(used: str, battle: Battle):
             else:
                 battle.outcome += "\n-> The Card failed the accuracy check and missed!"
                     
-    else:
-        battle.outcome = f"-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) "+ random.choice(["skipped a turn!", "decided to take a break for a short time!", "wants to chill down for now!", "passed their turn!"])
+    else: # 50% - 1 E; 20% - 2 E; 15% - 3 E; 10% - 4 E; 5% - 5 E
+        if battle.playerEnergy[battle.playerTurn] < 10:
+            energyplus = random.choice([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5])
+            battle.playerEnergy[battle.playerTurn] += energyplus
+            battle.pEnergyDeduct[battle.playerTurn] = f"+{energyplus}"
+            
+            if energyplus > 1:
+                if battle.playerEnergy[battle.playerTurn] > 10:
+                    battle.playerEnergy[battle.playerTurn] = 10
+        
+        battle.outcome = f"-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) "+ random.choice(["decided to rest!", "decided to take a break for a short time!", "wants to chill down for now!", "bolstered up their morale!"] + "\n-> **Energy has been restored.**")
     
     if cardID != 4:
         battle.playerUsedJS[battle.playerTurn] = False
