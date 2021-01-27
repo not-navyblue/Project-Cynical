@@ -492,7 +492,7 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
           
         if moveInfo.id == 11:
             moveInfo.power = "0 or 20 - 50"  
-        elif moveInfo.id == 12:
+        elif moveInfo.id == 13:
             moveInfo.power = "35 - 70"
         
         embed = discord.Embed(title = f"More Card Information")

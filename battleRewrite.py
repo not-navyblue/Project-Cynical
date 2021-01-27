@@ -24,7 +24,7 @@ class Battle:
         self.playerStatus = [["none", 0], ["none", 0]] # Status, Duration (0 means none, -1 means until certain conditions occur)
         self.playerStats = [[100, 100, 100, 100], [100, 100, 100, 100]] # Attack, Defense, Accuracy, Evasion
         self.playerChainLevel = [0, 0] # For the Cards "Chain" and "Chain Breaker"
-        self.playerHP = [150, 150]
+        self.playerHP = [200, 200]
         self.playerEnergy = [10, 10]
         self.playerLimitBreak = [False, False] # Did user break its limits?
         self.playerUsedJS = [False, False] # Did user use Jump Scare?
@@ -561,14 +561,14 @@ def what_happens(used: str, battle: Battle):
                     battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) consumed a poisoned "+ random.choice(["hamburger", "soda", "spaghetti", "sandwich", "slice of cake", "candy", "water", "garlic bread", "hotdog"]) + f" that was given by {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) and got poisoned for {turns} turns!"
         
             elif cardID == 7: # Healing Potion
-                if battle.playerHP[battle.playerTurn] >= 150:
+                if battle.playerHP[battle.playerTurn] >= 200:
                     battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) cannot heal anymore because their HP is full!"
                 else:
                     battle.playerHP[battle.playerTurn] += 60
                     battle.playerHasHealed[battle.playerTurn] = True
                     
-                    if battle.playerHP[battle.playerTurn] >= 150:
-                        battle.playerHP[battle.playerTurn] = 150
+                    if battle.playerHP[battle.playerTurn] > 200:
+                        battle.playerHP[battle.playerTurn] = 200
                 
                     battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) drank the Healing Potion™ and was healed by 40% the maximum HP!"
                 
@@ -828,8 +828,8 @@ def what_happens(used: str, battle: Battle):
                         battle.playerHP[battle.playerTurn] += int(150 * 0.7)
                         battle.playerHasHealed[battle.playerTurn] = True
                     
-                        if battle.playerHP[battle.playerTurn] > 150:
-                            battle.playerHP[battle.playerTurn] = 150
+                        if battle.playerHP[battle.playerTurn] > 200:
+                            battle.playerHP[battle.playerTurn] = 200
                             
                         battle.outcome += f"-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) and {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s Accuracy stats were reduced by 30% and 10%, respectively. {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) also healed by 70% the maximum HP!"
                     else: # Normal User's Effect
@@ -845,8 +845,8 @@ def what_happens(used: str, battle: Battle):
                         battle.playerHP[battle.playerTurn] += int(150 * 0.35)
                         battle.playerHasHealed[battle.playerTurn] = True
                     
-                        if battle.playerHP[battle.playerTurn] > 150:
-                            battle.playerHP[battle.playerTurn] = 150
+                        if battle.playerHP[battle.playerTurn] > 200:
+                            battle.playerHP[battle.playerTurn] = 200
                             
                         battle.outcome += f"-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) and {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s Accuracy stats were reduced by 25% and 15%, respectively. {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) also healed by 35% the maximum HP!"
             else:

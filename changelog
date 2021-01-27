@@ -85,3 +85,7 @@
 =-> Because of this fix, the chances of a Special Card are now reduced (25% instead of 40%)
 -> Fixed a bug which using the **Healing Potion** Card while not being poisoned does not show the difference
 -> Fixed a bug that the footer displays the wrong avatar and username after finishing a turn
+
+**Beta 1.11 - Quick Update 1**
+-> Increased maximum HP to 200
+-> Fixed **Early Assault** displaying the wrong Card Power in `c.cardinfo`
