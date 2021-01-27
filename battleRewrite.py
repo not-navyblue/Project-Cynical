@@ -262,7 +262,7 @@ def displayBattle(battle: Battle):
     embed.colour = random.randint(0, 0xffffff)
     
     while a < 2:
-        value = f"HP: {battle.playerHP[a]} / 150 ({battle.pHPDeduct[a]} HP)\nEnergy: {battle.playerEnergy[a]} / 10 ({battle.pEnergyDeduct[a]} Energy)\nStatus: {playerStatusDisplay[a]}\n"
+        value = f"HP: {battle.playerHP[a]} / 200 ({battle.pHPDeduct[a]} HP)\nEnergy: {battle.playerEnergy[a]} / 10 ({battle.pEnergyDeduct[a]} Energy)\nStatus: {playerStatusDisplay[a]}\n"
         value += "Cards on Deck:\n"
         
         isBanned = False
