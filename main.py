@@ -220,7 +220,8 @@ subtract = lambda a, b = 1: a - b
 BotToken = os.getenv("SOYDEVELOPER")
 DeveloperID = int(os.getenv("developerID"))
 
-bot = Bot(command_prefix = "c.", status = discord.Status.idle)
+bot = Bot(command_prefix = lambda _, message: message.content[:2] if message.content.lower().startswith('c.') else 'c.', 
+          status = discord.Status.idle)
 bot.activity = discord.Game("Project Cynical")
 bot.owner_id = DeveloperID
 bot.remove_command('help')
