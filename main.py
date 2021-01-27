@@ -322,7 +322,7 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
         
         await ctx.send(f"Latency is currently at {bot.latency * 1000:.2f}ms.")
 
-    @commands.command(aliases = ("terminate", "turnoff", "killbot"), hidden = True, help = "Shuts down the bot. Optional argument `--nowait` skips the 15-second delay. Bot developer only.")
+    @commands.command(aliases = ("terminate", "turnoff", "killbot", "restart"), hidden = True, help = "Shuts down the bot. Optional argument `--nowait` skips the 15-second delay. Bot developer only.")
     @Checks.is_developer(bot)
     async def shutdown(self, ctx, s: Optional[str]):
         if not isServerValid(ctx):
@@ -332,7 +332,7 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
         if s != "--nowait":
             bot.isShuttingDown = True
             await ctx.send("Shutting down in 15 seconds...")
-            await bot.change_presence(status = discord.Status.dnd, activity = discord.Game("Project (Shutting down...)"))
+            await bot.change_presence(status = discord.Status.dnd, activity = discord.Game("Project Cyclical (Shutting down...)"))
             await asyncio.sleep(15)
 
         await bot.change_presence(status = discord.Status.offline)
