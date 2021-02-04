@@ -39,10 +39,7 @@ class Card:
             raise Exception("Illegal Card energy cost value.")
         self.description = description
         self.effectDesc = effectDesc
-        if classification in ["offensive", "defensive", "miscellaneous"]:
-            self.classification = classification
-        else:
-            raise Exception("Illegal Card classification.")
+        self.classification = classification
         self.appliesToSelf = appliesToSelf
         self.isSpecial = False
       

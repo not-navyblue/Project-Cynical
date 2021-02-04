@@ -17,11 +17,12 @@ class Battle:
         self.winner = None
         self.winNum = -1
         self.consecutivePass = 0
-                            # Deck of usable Cards
-        self.playerCards = [[None, None, None, None, None, None, None, None], [None, None, None, None, None, None, None, None]]
+        self.playerCards = [[], []] # Deck of usable Cards
         self.lastUsedCard = [None, None]
         self.playerBannedCards = [list(), list()] # Card name, Length of ban (-1 means until the end of battle)
         self.playerStatus = [["none", 0], ["none", 0]] # Status, Duration (0 means none, -1 means until certain conditions occur)
+        # "none" - Normal; "protected" - Protect; "protected2" - Psychic Protect; "protected3" - Banishing Shield
+        # "poisoned" - Poison; "blocked" - Blocked
         self.playerStats = [[100, 100, 100, 100], [100, 100, 100, 100]] # Attack, Defense, Accuracy, Evasion
         self.playerChainLevel = [0, 0] # For the Cards "Chain" and "Chain Breaker"
         self.playerHP = [200, 200]
@@ -47,7 +48,7 @@ class Battle:
 def initBattle(battle: Battle):
     random.seed(random.randint(-10737418240, 10737418235))
     
-    regularCardChance = 75 # Chances that a player will get a non-Special Card.
+    regularCardChance = 90 # Chances that a player will get a non-Special Card.
     x = ""; doesNotExist = True; z = 0
     battle.playerTurn = random.randint(0, 1)
     battle.isBattling = True
@@ -55,7 +56,9 @@ def initBattle(battle: Battle):
     
     offC = 0
     defC = 0
+    supC = 0
     misC = 0
+    classif = list()
     
     for a in cards.SpecialCards_:
         if a == None:
@@ -66,23 +69,29 @@ def initBattle(battle: Battle):
     while not (offC > 0 and defC > 0 and misC > 0):
         offC = 0
         defC = 0
+        supC = 0
         misC = 0
+        classif = list()
     
-        battle.playerCards[0] = [None, None, None, None, None, None, None, None]
+        battle.playerCards[0] = [None, None, None, None, None, None, None, None, None]
         
         for a in cards.SpecialCards:
             if battle.fighters[0].id == cards.SpecialCards[a].originalUser:
                 battle.playerCards[0][z] = a
                 z += 1
             
-                if cards.SpecialCards[a].classification == "offensive":
+                classif = cards.SpecialCards[a].classification.split(",", 1)
+                
+                if "offensive" in classif:
                     offC += 1
-                elif cards.SpecialCards[a].classification == "defensive":
+                if "defensive" in classif:
                     defC += 1
-                elif cards.SpecialCards[a].classification == "miscellaneous":
+                if "support" in classif:
+                    supC += 1
+                if "miscellaneous" in classif:
                     misC += 1
             
-        while battle.playerCards[0][7] == None:
+        while battle.playerCards[0][8] == None:
             if random.randint(1, 100) <= regularCardChance:
                 while doesNotExist:
                     x = random.choice(cards.UniversalCards)
@@ -97,11 +106,15 @@ def initBattle(battle: Battle):
                             doesNotExist = False
                             z += 1
                         
-                            if cards.NormalCards[x].classification == "offensive":
+                            classif = cards.NormalCards[x].classification.split(",", 1)
+                
+                            if "offensive" in classif:
                                 offC += 1
-                            elif cards.NormalCards[x].classification == "defensive":
+                            if "defensive" in classif:
                                 defC += 1
-                            elif cards.NormalCards[x].classification == "miscellaneous":
+                            if "support" in classif:
+                                supC += 1
+                            if "miscellaneous" in classif:
                                 misC += 1
                         
                             break
@@ -120,11 +133,15 @@ def initBattle(battle: Battle):
                             doesNotExist = False
                             z += 1
                         
-                            if cards.SpecialCards[x].classification == "offensive":
+                            classif = cards.SpecialCards[x].classification.split(",", 1)
+                
+                            if "offensive" in classif:
                                 offC += 1
-                            elif cards.SpecialCards[x].classification == "defensive":
+                            if "defensive" in classif:
                                 defC += 1
-                            elif cards.SpecialCards[x].classification == "miscellaneous":
+                            if "support" in classif:
+                                supC += 1
+                            if "miscellaneous" in classif:
                                 misC += 1
                         
                             break
@@ -134,28 +151,36 @@ def initBattle(battle: Battle):
     
     offC = 0
     defC = 0
+    supC = 0
     misC = 0
+    classif = list()
     
     while not (offC > 0 and defC > 0 and misC > 0):
         offC = 0
         defC = 0
+        supC = 0
         misC = 0
+        classif = list()
         
-        battle.playerCards[1] = [None, None, None, None, None, None, None, None]
+        battle.playerCards[1] = [None, None, None, None, None, None, None, None, None]
         
         for a in cards.SpecialCards:
             if battle.fighters[1].id == cards.SpecialCards[a].originalUser:
                 battle.playerCards[1][z] = a
                 z += 1
-            
-                if cards.SpecialCards[a].classification == "offensive":
+                
+                classif = cards.SpecialCards[a].classification.split(",", 1)
+                
+                if "offensive" in classif:
                     offC += 1
-                elif cards.SpecialCards[a].classification == "defensive":
+                if "defensive" in classif:
                     defC += 1
-                elif cards.SpecialCards[a].classification == "miscellaneous":
+                if "support" in classif:
+                    supC += 1
+                if "miscellaneous" in classif:
                     misC += 1
             
-        while battle.playerCards[1][7] == None:
+        while battle.playerCards[1][8] == None:
             if random.randint(1, 100) <= regularCardChance:
                 while doesNotExist:
                     x = random.choice(cards.UniversalCards)
@@ -170,11 +195,15 @@ def initBattle(battle: Battle):
                             doesNotExist = False
                             z += 1
                         
-                            if cards.NormalCards[x].classification == "offensive":
+                            classif = cards.NormalCards[x].classification.split(",", 1)
+                
+                            if "offensive" in classif:
                                 offC += 1
-                            elif cards.NormalCards[x].classification == "defensive":
+                            if "defensive" in classif:
                                 defC += 1
-                            elif cards.NormalCards[x].classification == "miscellaneous":
+                            if "support" in classif:
+                                supC += 1
+                            if "miscellaneous" in classif:
                                 misC += 1
                         
                             break
@@ -193,11 +222,15 @@ def initBattle(battle: Battle):
                             doesNotExist = False
                             z += 1
                         
-                            if cards.SpecialCards[x].classification == "offensive":
+                            classif = cards.SpecialCards[x].classification.split(",", 1)
+                
+                            if "offensive" in classif:
                                 offC += 1
-                            elif cards.SpecialCards[x].classification == "defensive":
+                            if "defensive" in classif:
                                 defC += 1
-                            elif cards.SpecialCards[x].classification == "miscellaneous":
+                            if "support" in classif:
+                                supC += 1
+                            if "miscellaneous" in classif:
                                 misC += 1
                         
                             break
@@ -208,7 +241,6 @@ def initBattle(battle: Battle):
 def displayBattle(battle: Battle):
     playerStatusDisplay = ["None", "None"]
     
-    # Hierarchy: Protected < Poisoned < Protected (PsyPro) < Flinched < Blocked < Dead < Revivable
     a = 0
     b = 1
     while a < 2:
@@ -221,13 +253,20 @@ def displayBattle(battle: Battle):
             playerStatusDisplay[a] = "Poisoned"
         elif battle.playerStatus[a][0] == "blocked":
             playerStatusDisplay[a] = "Blocked"
-        elif battle.playerStatus[a][0] == "protected" or battle.playerStatus[a][0] == "protected2":
-            playerStatusDisplay[a] = "Protected"
+        elif battle.playerStatus[a][0] == "protected":
+            playerStatusDisplay[a] = "Protected (**Protection**)"
+        elif battle.playerStatus[a][0] == "protected2":
+            playerStatusDisplay[a] = "Protected (**Psyched Protection**)"
+        elif battle.playerStatus[a][0] == "protected3":
+            playerStatusDisplay[a] = "Protected (**Disabling Aura**)"
         elif battle.playerStatus[a][0] == "none":
             playerStatusDisplay[a] = "OK"
         else:
             playerStatusDisplay[a] = "Error"
-            
+        
+        if battle.playerRevival[a]:
+            playerStatusDisplay[a] += "+"
+        
         if battle.playerFlinched[a]:
             playerStatusDisplay[a] += ", Flinched"
             
@@ -236,13 +275,13 @@ def displayBattle(battle: Battle):
             battle.endBattle = True
             battle.winner = battle.fighters[b]
             battle.winNum = b
-            battle.outcome += f"\n-> {battle.fighters[a].display_name} (Battler {a + 1}: {battle.fighters[a]}) " + random.choice(["was defeated in battle!", "got too tired and collapsed!", "couldn't handle it anymore and called for a time out!", "died!"])
+            battle.outcome += f"\n-> {battle.fighters[a].display_name} ({battle.fighters[a]}) " + random.choice(["was defeated in battle!", "got too tired and collapsed!", "couldn't handle it anymore and called for a time out!", "died!"])
         elif battle.playerStatus[a][0] == "surrendered":
             playerStatusDisplay[a] = "Defeated (Surrendered)"
             battle.endBattle = True
             battle.winner = battle.fighters[b]
             battle.winNum = b
-            battle.outcome = f"{battle.fighters[a].display_name} (Battler {a + 1}: {battle.fighters[a]}) has " + random.choice(["surrendered", "yielded", "resigned", "given up"]) + "!"
+            battle.outcome = f"-> {battle.fighters[a].display_name} ({battle.fighters[a]}) has " + random.choice(["surrendered", "retreated", "resigned", "given up"]) + "!"
         
         if battle.playerStatus[a] == ["blocked", 0]:
             battle.playerStatus[a] = ["none", 0]
@@ -258,17 +297,17 @@ def displayBattle(battle: Battle):
         battle.endBattle = True
         battle.outcome += "\n-> The battle has automatically ended!"
     
-    embed = discord.Embed(title = f"Card Battle (Turn {battle.turns})")
+    embed = discord.Embed(title = f"Card Battle (Turn {battle.turns // 2 + 1} [Total: {battle.turns}])")
     embed.colour = random.randint(0, 0xffffff)
     
     while a < 2:
-        value = f"HP: {battle.playerHP[a]} / 200 ({battle.pHPDeduct[a]} HP)\nEnergy: {battle.playerEnergy[a]} / 10 ({battle.pEnergyDeduct[a]} Energy)\nStatus: {playerStatusDisplay[a]}\n"
-        value += "Cards on Deck:\n"
+        value = f"**HP**: {battle.playerHP[a]} / 200 ({battle.pHPDeduct[a]} HP)\n**Energy**: {battle.playerEnergy[a]} / 10 Energy ({battle.pEnergyDeduct[a]} Energy)\n**Status**: {playerStatusDisplay[a]}\n"
+        value += "**Cards on Deck**:\n"
         
         isBanned = False
         z = 1
         for x in battle.playerCards[a]:
-            if x == battle.playerCards[a][7]:
+            if x == battle.playerCards[a][8]:
                 break
             
             if len(battle.playerBannedCards[a]) > 0:
@@ -287,7 +326,7 @@ def displayBattle(battle: Battle):
             
         if len(battle.playerBannedCards[a]) > 0:
             for x in battle.playerBannedCards[a]:
-                if x[0] == battle.playerCards[a][7]:
+                if x[0] == battle.playerCards[a][8]:
                     if x[1] == -1 or x[1] > 0:
                         value += f"~~[{z}] {battle.playerCards[a][7]}~~".title()
                         isBanned = True
@@ -295,13 +334,20 @@ def displayBattle(battle: Battle):
                         battle.playerBannedCards.remove(x)
                     
         if not isBanned:
-            value += f"**[{z}]** {battle.playerCards[a][7]}".title()
+            value += f"**[{z}]** {battle.playerCards[a][8]}".title()
         
-        embed.add_field(name = f"Battler {a + 1}: {battle.fighters[a].display_name} ({battle.fighters[a]})", value = value)
+        if "limit break" in battle.playerCards[a]:
+            value += "\n**Limit Break**: "
+            
+            if battle.playerLimitBreak[a]:
+                value += "Active"
+            else:
+                value += "Inactive"
+        
+        embed.add_field(name = f"Player {a + 1}: {battle.fighters[a].display_name} ({battle.fighters[a]})", value = value)
         a += 1
     
-    embed.description = "**Previous outcome:**\n" + battle.outcome
-    battle.outcome = "\nThe battle is occurring!"
+    embed.description = "**Previous Turn's Outcome:**\n" + battle.outcome
     
     return embed
 
@@ -312,7 +358,7 @@ def checkIfValid(card, battle: Battle):
     
     if type(card) is int:
         deckNum = int(card)
-        if deckNum < 1 or deckNum > 8:
+        if deckNum < 1 or deckNum > 9:
             return "out of bounds"
         else:
             card = battle.playerCards[battle.playerTurn][deckNum - 1].lower()
@@ -357,275 +403,289 @@ def what_happens(used: str, battle: Battle):
     cardSpecial = cardUsed.isSpecial
     cardID = cardUsed.id
     cardOU = 0
-    defendingPlayer = int()
+    dpTurn = int()
     battle.pHPDeduct = ["0", "0"]
     battle.pEnergyDeduct = ["0", "0"]
     battle.turns += 1
+    pTurn = battle.playerTurn
+    noUse = False
     damage = 0
     pHPDtemp = 0
     
-    if battle.playerTurn == 0:
-        defendingPlayer = 1
-    elif battle.playerTurn == 1:
-        defendingPlayer = 0
+    if pTurn == 0:
+        dpTurn = 1
+    elif pTurn == 1:
+        dpTurn = 0
     else:
         return
     
-    if battle.playerEnergy[defendingPlayer] < 10:
+    if battle.playerEnergy[dpTurn] < 10:
         energyplus = random.choice([1, 1, 1, 1, 1, 1, 1, 2, 2, 3])
-        battle.playerEnergy[defendingPlayer] += energyplus
+        battle.playerEnergy[dpTurn] += energyplus
         
         if energyplus > 1:
             if energyplus == 2:
-                battle.pEnergyDeduct[defendingPlayer] = "+2"
+                battle.pEnergyDeduct[dpTurn] = "+2"
             elif energyplus == 3:
-                battle.pEnergyDeduct[defendingPlayer] = "+3"
+                battle.pEnergyDeduct[dpTurn] = "+3"
             
-            if battle.playerEnergy[defendingPlayer] > 10:
-                battle.playerEnergy[defendingPlayer] = 10
+            if battle.playerEnergy[dpTurn] > 10:
+                battle.playerEnergy[dpTurn] = 10
         else:
-            battle.pEnergyDeduct[defendingPlayer] = "+1"
+            battle.pEnergyDeduct[dpTurn] = "+1"
     
-    battle.outcome = f"=> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) used the Card \"**{cardUsed.name}**\"!"
+    battle.outcome = f"=> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** used the Card \"**{cardUsed.name}**\"!"
     
-    if used != "pass":
-        battle.lastUsedCard[battle.playerTurn] = used
+    if used != "restore":
+        battle.lastUsedCard[pTurn] = used
     
+    if not cardUsed.appliesToSelf and (battle.playerStatus[dpTurn][0] == "protected3" and battle.playerStatus[dpTurn][1] > 0):
+        if cardID != 1002:
+            battle.playerEnergy[pTurn] -= cardUsed.energycost
+            battle.pEnergyDeduct[pTurn] = f"{-cardUsed.energycost}"
+        
+            battle.playerStatus[dpTurn] = ["none", 0]
+            battle.playerBannedCards[pTurn].append([used, -1])
+
+            noUse = True
+            battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s **Disabling Aura** has been triggered, causing **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s {used.title()} to fail and be permanently Disabled!"
+        
     # Reminder: Attack, Defense, Accuracy, Evasion; Status, Turns Left
     # Minimum/Maximum: 20 - 200 (Attack/Defense) / 50 - 150 (Accuracy/Evasion)
-    # Hierarchy: Protected < Poisoned < Protected (PsyPro) < Flinched < Blocked < Dead < Revivable
-    if not cardSpecial and cardID != 1000:
-        battle.playerEnergy[battle.playerTurn] -= cardUsed.energycost
-        battle.pEnergyDeduct[battle.playerTurn] = f"{-cardUsed.energycost}"
-        noUse = False
+    if not cardSpecial and cardID != 1000 and not noUse:
+        battle.playerEnergy[pTurn] -= cardUsed.energycost
+        battle.pEnergyDeduct[pTurn] = f"{-cardUsed.energycost}"
         accu = 100
         
-        if battle.playerUsedJS[battle.playerTurn] and cardID == 4:
+        if battle.playerUsedJS[pTurn] and cardID == 4:
             battle.outcome += "\n-> The Card failed because it was attempted to be used in succession!"
             noUse = True
-        elif battle.playerHasHealed[battle.playerTurn] and cardID == 7:
-            accu = int(accuracyCalc(int(cardUsed.accuracy * 0.75), battle.playerStats[battle.playerTurn][2], battle.playerStats[defendingPlayer][3], cardUsed.appliesToSelf))
-        elif battle.playerUsedMute[battle.playerTurn] and cardID == 9:
-            accu = int(accuracyCalc(int(cardUsed.accuracy * 0.25), battle.playerStats[battle.playerTurn][2], battle.playerStats[defendingPlayer][3], cardUsed.appliesToSelf))
+        elif used == "early assault" and battle.turns >= 12:
+            battle.outcome += "\n-> It is too late to use this Card now!"
+            noUse = True
+        elif battle.playerHasHealed[pTurn] and cardID == 7:
+            accu = int(accuracyCalc(int(cardUsed.accuracy * 0.75), battle.playerStats[pTurn][2], battle.playerStats[dpTurn][3], cardUsed.appliesToSelf))
+        elif battle.playerUsedMute[pTurn] and cardID == 9:
+            accu = int(accuracyCalc(int(cardUsed.accuracy * 0.25), battle.playerStats[pTurn][2], battle.playerStats[dpTurn][3], cardUsed.appliesToSelf))
         else:
-            accu = int(accuracyCalc(cardUsed.accuracy, battle.playerStats[battle.playerTurn][2], battle.playerStats[defendingPlayer][3], cardUsed.appliesToSelf))
+            accu = int(accuracyCalc(cardUsed.accuracy, battle.playerStats[pTurn][2], battle.playerStats[dpTurn][3], cardUsed.appliesToSelf))
 
         if random.randint(1, 100) <= accu and not noUse:
             if cardID == 0: # Punch
-                if battle.playerStatus[defendingPlayer][0] != "protected" and battle.playerStatus[defendingPlayer][0] != "protected2":
+                if battle.playerStatus[dpTurn][0] != "protected" and battle.playerStatus[dpTurn][0] != "protected2":
                     if normal_criticalHitChance():
-                        damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                        damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                         battle.outcome += "\n-> **Critical hit!**"
                     else:
-                        damage = damageCalc(cardUsed.power, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                        damage = damageCalc(cardUsed.power, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                     
-                    battle.playerHP[defendingPlayer] -= damage
+                    battle.playerHP[dpTurn] -= damage
                     pHPDtemp -= damage
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) punched {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) in the {random.choice(['face', 'gut', 'chest'])} and dealt {damage} HP damage!"
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** punched **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** in the {random.choice(['face', 'gut', 'chest'])} and dealt {damage} HP damage!"
                     del damage
                 else:
-                    if battle.playerStatus[defendingPlayer][0] == "protected":
+                    if battle.playerStatus[dpTurn][0] == "protected":
                         if normal_criticalHitChance():
-                            damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                            damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                             battle.outcome += "\n-> **Critical hit!**"
                         else:
-                            damage = damageCalc(cardUsed.power, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                            damage = damageCalc(cardUsed.power, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                         
-                        battle.playerHP[defendingPlayer] -= int(damage - damage * 0.85)
+                        battle.playerHP[dpTurn] -= int(damage - damage * 0.85)
                         pHPDtemp -= int(damage - damage * 0.85)
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) punched {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) in the {random.choice(['face', 'gut', 'chest'])}, but {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]})'s **Protect** reduced the damage and it dealt {damage} HP damage!"
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** punched **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** in the {random.choice(['face', 'gut', 'chest'])}, but **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s **Protect** reduced the damage and it dealt {damage} HP damage!"
                         del damage
-                    elif battle.playerStatus[defendingPlayer] == "protected2":
-                        battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) protected themself from the attack!"
+                    elif battle.playerStatus[dpTurn] == "protected2":
+                        battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** protected themself from the attack!"
             
             elif cardID == 1: # Super Punch
-                if battle.playerStatus[defendingPlayer][0] != "protected" and battle.playerStatus[defendingPlayer][0] != "protected2":
+                if battle.playerStatus[dpTurn][0] != "protected" and battle.playerStatus[dpTurn][0] != "protected2":
                     if increased_criticalHitChance():
-                        damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                        damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                         battle.outcome += "\n-> **Critical hit!**"
                     else:
-                        damage = damageCalc(cardUsed.power, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                        damage = damageCalc(cardUsed.power, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                     
-                    battle.playerHP[defendingPlayer] -= damage
+                    battle.playerHP[dpTurn] -= damage
                     pHPDtemp -= damage
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) gathered power in their fists and punched {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) in the {random.choice(['face', 'gut', 'chest'])}, dealing a whopping {damage} HP damage!"
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** gathered power in their fists and punched **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** in the {random.choice(['face', 'gut', 'chest'])}, dealing a whopping {damage} HP damage!"
                     del damage
                 else:
-                    if battle.playerStatus[defendingPlayer][0] == "protected":
+                    if battle.playerStatus[dpTurn][0] == "protected":
                         if increased_criticalHitChance():
-                            damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                            damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                             battle.outcome += "\n-> **Critical hit!**"
                         else:
-                            damage = damageCalc(cardUsed.power, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                            damage = damageCalc(cardUsed.power, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                             
-                        battle.playerHP[defendingPlayer] -= int(damage - damage * 0.85)
+                        battle.playerHP[dpTurn] -= int(damage - damage * 0.85)
                         pHPDtemp -= int(damage - damage * 0.85)
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) attacked with a powerful punch against {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) in the {random.choice(['face', 'gut', 'chest'])}, but {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]})'s **Protect** reduced the damage and it dealt {damage} HP damage!"
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** attacked with a powerful punch against **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** in the {random.choice(['face', 'gut', 'chest'])}, but **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s **Protect** reduced the damage and it dealt {damage} HP damage!"
                         del damage
-                    elif battle.playerStatus[defendingPlayer][0] == "protected2":
-                        battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) protected themself from the attack!"
+                    elif battle.playerStatus[dpTurn][0] == "protected2":
+                        battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** protected themself from the attack!"
                 
             elif cardID == 2: # Splash
-                battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) splashed a glass of water towards {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s face!"
+                battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** splashed a glass of water towards **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s face!"
                 if random.randint(1, 100) <= 66:
-                    if random.randint(1, 2) == 1 and battle.playerStatus[defendingPlayer][0] != "blocked": # 1 is Flinch; 2 is 1 HP damage
-                        battle.playerFlinched[defendingPlayer] = True
+                    if random.randint(1, 2) == 1 and battle.playerStatus[dpTurn][0] != "blocked": # 1 is Flinch; 2 is 1 HP damage
+                        battle.playerFlinched[dpTurn] = True
                     else:
-                        battle.playerHP[defendingPlayer] -= 1
+                        battle.playerHP[dpTurn] -= 1
                         pHPDtemp -= 1
-                        battle.outcome += f" {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) was damaged by 1 HP!"
+                        battle.outcome += f" **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** was damaged by 1 HP!"
                 else:
                     battle.outcome += " But nothing happened."
                     
             elif cardID == 3: # Double Slap
                 willFlinch = False
                 if normal_criticalHitChance():
-                    damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                    damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                     battle.outcome += "\n-> **Critical hit!**"
                 else:
-                    damage = damageCalc(cardUsed.power, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                    damage = damageCalc(cardUsed.power, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                     
                 for a in battle.playerHP:
                     a = a # lol
                     
-                    if battle.playerStatus[defendingPlayer][0] != "protected" and battle.playerStatus[defendingPlayer][0] != "protected2":
-                        battle.playerHP[defendingPlayer] -= damage
+                    if battle.playerStatus[dpTurn][0] != "protected" and battle.playerStatus[dpTurn][0] != "protected2":
+                        battle.playerHP[dpTurn] -= damage
                         pHPDtemp -= damage
                     else:
-                        if battle.playerStatus[defendingPlayer][0] == "protected":
-                            battle.playerHP[defendingPlayer] -= int(damage - damage * 0.85)
+                        if battle.playerStatus[dpTurn][0] == "protected":
+                            battle.playerHP[dpTurn] -= int(damage - damage * 0.85)
                             pHPDtemp -= int(damage - damage * 0.85)
-                        elif battle.playerStatus[defendingPlayer][0] == "protected2":
-                            battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) protected themself from the attack!"
+                        elif battle.playerStatus[dpTurn][0] == "protected2":
+                            battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** protected themself from the attack!"
                             break
                     
-                    if random.randint(1, 100) <= 25 and battle.playerStatus[defendingPlayer][0] != "blocked":
+                    if random.randint(1, 100) <= 25 and battle.playerStatus[dpTurn][0] != "blocked":
                         willFlinch = True
                         
-                if battle.playerStatus[defendingPlayer][0] != "protected" and battle.playerStatus[defendingPlayer][0] != "protected2":
-                    battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) got slapped in the face twice by {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) dealing {damage} HP of damage each slap!"
-                elif battle.playerStatus[defendingPlayer][0] == "protected":
-                    battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) got slapped in the face twice by {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}), but {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]})'s **Protection** effect reduced the damage and it only dealt {damage} HP damage per slap!"
+                if battle.playerStatus[dpTurn][0] != "protected" and battle.playerStatus[dpTurn][0] != "protected2":
+                    battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** got slapped in the face twice by **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** dealing {damage} HP of damage each slap!"
+                elif battle.playerStatus[dpTurn][0] == "protected":
+                    battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** got slapped in the face twice by **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**, but **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s **Protection** effect reduced the damage and it only dealt {damage} HP damage per slap!"
 
                 if willFlinch:
-                    battle.playerFlinched[defendingPlayer] = True
+                    battle.playerFlinched[dpTurn] = True
             
                 del willFlinch
                 
             elif cardID == 4: # Jump Scare
-                if battle.playerUsedJS[battle.playerTurn]: # deprecated
+                if battle.playerUsedJS[pTurn]: # deprecated
                     battle.outcome += "\n-> The Card failed because it was attempted to be used in succession!"
                 else:
-                    if battle.playerStatus[defendingPlayer][0] != "protected" and battle.playerStatus[defendingPlayer][0] != "protected2":
-                        if battle.playerUsedJS[battle.playerTurn]: # deprecated
+                    if battle.playerStatus[dpTurn][0] != "protected" and battle.playerStatus[dpTurn][0] != "protected2":
+                        if battle.playerUsedJS[pTurn]: # deprecated
                             battle.outcome += "\n-> The Card failed due to a prior use of this Card!"
                         else:
-                            if battle.playerStats[defendingPlayer][2] <= 50 or (battle.playerStats[defendingPlayer][3] >= 150 and not battle.playerLimitBreak[battle.playerTurn]):
-                                battle.outcome += f"\n-> The Card failed because {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) can no longer have its stats changed!"
-                            elif battle.playerStatus[defendingPlayer][0] == "blocked":
-                                battle.outcome += f"\-> nThe Card failed because {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) was already Blocked!"
+                            if battle.playerStats[dpTurn][2] <= 50 or (battle.playerStats[dpTurn][3] >= 150 and not battle.playerLimitBreak[pTurn]):
+                                battle.outcome += f"\n-> The Card failed because **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** can no longer have its stats changed!"
+                            elif battle.playerStatus[dpTurn][0] == "blocked":
+                                battle.outcome += f"\-> nThe Card failed because **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** was already Blocked!"
                             else:
-                                battle.playerFlinched[defendingPlayer] = True
-                                battle.playerUsedJS[battle.playerTurn] = True
+                                battle.playerFlinched[dpTurn] = True
+                                battle.playerUsedJS[pTurn] = True
                             
-                                battle.playerStats[defendingPlayer][2] -= 5
-                                if battle.playerStats[defendingPlayer][2] < 50:
-                                    battle.playerStats[defendingPlayer][2] = 50
+                                battle.playerStats[dpTurn][2] -= 5
+                                if battle.playerStats[dpTurn][2] < 50:
+                                    battle.playerStats[dpTurn][2] = 50
                             
-                                battle.playerStats[defendingPlayer][3] += 10
-                                if battle.playerStats[defendingPlayer][3] > 150 and not battle.playerLimitBreak[defendingPlayer]:
-                                    battle.playerStats[defendingPlayer][3] = 150
+                                battle.playerStats[dpTurn][3] += 10
+                                if battle.playerStats[dpTurn][3] > 150 and not battle.playerLimitBreak[dpTurn]:
+                                    battle.playerStats[dpTurn][3] = 150
                         
-                                battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) suddenly jumpscared the heck out of {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) without warning!\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]})'s Accuracy and Evasion changed by -5% and +10% respectively!"
+                                battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** suddenly jumpscared the heck out of **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** without warning!\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s Accuracy and Evasion changed by -5% and +10% respectively!"
                     else:
-                        battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) protected themself from being jumpscared!"
+                        battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** protected themself from being jumpscared!"
                     
             elif cardID == 5: # Potion of Invisibility
-                if battle.playerStats[battle.playerTurn][3] >= 150 and not battle.playerLimitBreak[battle.playerTurn]:
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s Evasion stat can no longer be increased further!"
+                if battle.playerStats[pTurn][3] >= 150 and not battle.playerLimitBreak[pTurn]:
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s Evasion stat can no longer be increased further!"
                 else:
-                    battle.playerStats[battle.playerTurn][3] += 10
+                    battle.playerStats[pTurn][3] += 10
                     
-                    if battle.playerStats[battle.playerTurn][3] > 150 and not battle.playerLimitBreak[battle.playerTurn]:
-                        battle.playerStats[battle.playerTurn][3] = 150
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) drank a Potion of Invisibility and increased their Evasion stat by 5%!"
+                    if battle.playerStats[pTurn][3] > 150 and not battle.playerLimitBreak[pTurn]:
+                        battle.playerStats[pTurn][3] = 150
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** drank a Potion of Invisibility and increased their Evasion stat by 5%!"
 
             elif cardID == 6: # Poison Target
-                if battle.playerStatus[defendingPlayer][0] == "poison":
-                    battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) is already currently poisoned!"
-                elif battle.playerStatus[defendingPlayer][0] == "blocked" or battle.playerStatus[defendingPlayer][0] == "protected" or battle.playerStatus[defendingPlayer][0] == "protected2":
-                    battle.outcome += f"\nThe Card failed to work because of {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]})'s status overpowering it!"
+                if battle.playerStatus[dpTurn][0] == "poison":
+                    battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** is already currently poisoned!"
+                elif battle.playerStatus[dpTurn][0] == "blocked" or battle.playerStatus[dpTurn][0] == "protected" or battle.playerStatus[dpTurn][0] == "protected2":
+                    battle.outcome += f"\nThe Card failed to work because of **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s status overpowering it!"
                 else:
                     turns = random.randint(2, 5)
-                    battle.playerStatus[defendingPlayer] = ["poison", turns]
-                    battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) consumed a poisoned "+ random.choice(["hamburger", "soda", "spaghetti", "sandwich", "slice of cake", "candy", "water", "garlic bread", "hotdog"]) + f" that was given by {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) and got poisoned for {turns} turns!"
+                    battle.playerStatus[dpTurn] = ["poison", turns]
+                    battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** consumed a poisoned "+ random.choice(["hamburger", "soda", "spaghetti", "sandwich", "slice of cake", "candy", "water", "garlic bread", "hotdog"]) + f" that was given by **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** and got poisoned for {turns} turns!"
         
             elif cardID == 7: # Healing Potion
-                if battle.playerHP[battle.playerTurn] >= 200:
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) cannot heal anymore because their HP is full!"
+                if battle.playerHP[pTurn] >= 200:
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** cannot heal anymore because their HP is full!"
                 else:
-                    battle.playerHP[battle.playerTurn] += 60
-                    battle.playerHasHealed[battle.playerTurn] = True
+                    battle.playerHP[pTurn] += (200 * 0.45)
+                    battle.playerHasHealed[pTurn] = True
                     
-                    if battle.playerHP[battle.playerTurn] > 200:
-                        battle.playerHP[battle.playerTurn] = 200
+                    if battle.playerHP[pTurn] > 200:
+                        battle.playerHP[pTurn] = 200
                 
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) drank the Healing Potion™ and was healed by 40% the maximum HP!"
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** drank the Healing Potion™ and was healed by 40% the maximum HP!"
                 
-                    if battle.playerStatus[battle.playerTurn][0] == "poison":
+                    if battle.playerStatus[pTurn][0] == "poison":
                         if random.randint(1, 100) <= 30:
-                            battle.playerStatus[battle.playerTurn] == ["none", 0]
-                            battle.pHPDeduct[battle.playerTurn] = "+60"
-                            battle.outcome += f" The potion also cured {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) of their poisoning!"
+                            battle.playerStatus[pTurn] == ["none", 0]
+                            battle.pHPDeduct[pTurn] = "+60"
+                            battle.outcome += f" The potion also cured **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** of their poisoning!"
                     else:
-                        battle.pHPDeduct[battle.playerTurn] = "+60"
-                        battle.outcome += f" The potion also cured {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) of their poisoning!"
+                        battle.pHPDeduct[pTurn] = "+60"
+                        battle.outcome += f" The potion also cured **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** of their poisoning!"
             
             elif cardID == 8: # Warn
-                if battle.playerStatus[defendingPlayer][0] == "blocked" or battle.playerStatus[defendingPlayer][0] == "protected" or battle.playerStatus[defendingPlayer][0] == "protected2":
-                    battle.outcome += f"\nThe Card failed to work because of {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]})'s status overpowering it!"
+                if battle.playerStatus[dpTurn][0] == "blocked" or battle.playerStatus[dpTurn][0] == "protected" or battle.playerStatus[dpTurn][0] == "protected2":
+                    battle.outcome += f"\nThe Card failed to work because of **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s status overpowering it!"
                 else:
-                    battle.playerStatus[defendingPlayer] = ["blocked", 2]
+                    battle.playerStatus[dpTurn] = ["blocked", 2]
                     
-                    battle.outcome += f"\n!warn {battle.fighters[defendingPlayer].mention} the The"
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) warned {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}), preventing them from using any Card for 2 turns!"
+                    battle.outcome += f"\n!warn {battle.fighters[dpTurn].mention} the The"
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** warned **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**, preventing them from using any Card for 2 turns!"
             
             elif cardID == 9: # Mute
-                if battle.lastUsedCard[defendingPlayer] == None:
-                    battle.outcome += f"\n-> The Card failed to work because {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}) hasn't used a Card at least once!"
+                if battle.lastUsedCard[dpTurn] == None:
+                    battle.outcome += f"\n-> The Card failed to work because {battle.fighters[dpTurn].display_name} (Battler {dpTurn + 1}) hasn't used a Card at least once!"
                 else:
-                    battle.playerUsedMute[battle.playerTurn] = True
+                    battle.playerUsedMute[pTurn] = True
                     randomDuration = random.randint(2, 5)
                     
-                    battle.playerBannedCards[defendingPlayer].append([battle.lastUsedCard[defendingPlayer], randomDuration])
+                    battle.playerBannedCards[dpTurn].append([battle.lastUsedCard[dpTurn], randomDuration])
                     
-                    battle.outcome += f"\n!tempmute {battle.fighters[defendingPlayer].mention} {randomDuration}d the The"
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) has muted {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}), disabling their Card \"{battle.lastUsedCard[defendingPlayer].title()}\", preventing them from using it for {randomDuration} turns!"
+                    battle.outcome += f"\n!tempmute {battle.fighters[dpTurn].mention} {randomDuration}d the The"
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** has muted **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**, disabling their Card \"{battle.lastUsedCard[dpTurn].title()}\", preventing them from using it for {randomDuration} turns!"
             
             elif cardID == 10: # Ban
-                if battle.lastUsedCard[defendingPlayer] == None:
-                    battle.outcome += f"\n-> The Card failed to work because {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}) hasn't used a Card at least once!"
-                elif "protected" in battle.playerStatus[defendingPlayer][0]:
-                    battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}) protected themselves from the effects of the Card!"
+                if battle.lastUsedCard[dpTurn] == None:
+                    battle.outcome += f"\n-> The Card failed to work because {battle.fighters[dpTurn].display_name} (Battler {dpTurn + 1}) hasn't used a Card at least once!"
+                elif "protected" in battle.playerStatus[dpTurn][0]:
+                    battle.outcome += f"\n-> {battle.fighters[dpTurn].display_name} (Battler {dpTurn + 1}) protected themselves from the effects of the Card!"
                 else:
-                    battle.playerFlinched[defendingPlayer] = True
+                    battle.playerFlinched[dpTurn] = True
                     
-                    battle.playerBannedCards[defendingPlayer].append([battle.lastUsedCard[defendingPlayer], -1])
-                    battle.playerBannedCards[battle.playerTurn].append(["ban", -1])
+                    battle.playerBannedCards[dpTurn].append([battle.lastUsedCard[dpTurn], -1])
+                    battle.playerBannedCards[pTurn].append(["ban", -1])
             
-                battle.outcome += f"\n!ban {battle.fighters[defendingPlayer].mention} the The"
-                battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) has banned {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}), leaving them unable to move for one turn and disabling their Card {battle.lastUsedCard[defendingPlayer].title()} for use for the rest of the battle! This Card is also now disabled for use for the same duration."
+                battle.outcome += f"\n!ban {battle.fighters[dpTurn].mention} the The"
+                battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** has banned **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**, leaving them unable to move for one turn and disabling their Card {battle.lastUsedCard[dpTurn].title()} for use for the rest of the battle! This Card is also now disabled for use for the same duration."
 
             elif cardID == 11: # Push
-                if battle.playerStatus[defendingPlayer][0] == "protected2":
-                    battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) protected themself from the attack!"
+                if battle.playerStatus[dpTurn][0] == "protected2":
+                    battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** protected themself from the attack!"
                 else:
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) pushed {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) "
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** pushed **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** "
                     
                     if random.randint(1, 100) <= 50:
-                        damage = damageCalc(random.randint(20, 50), battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                        damage = damageCalc(random.randint(20, 50), battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                     
-                        battle.playerHP[defendingPlayer] -= damage
+                        battle.playerHP[dpTurn] -= damage
                         pHPDtemp -= damage
                         
                         battle.outcome += f"on the edge of a cliff and fell, sustaining {damage} HP damage!"
@@ -633,285 +693,407 @@ def what_happens(used: str, battle: Battle):
                         battle.outcome += f"but nothing happened!"
             
             elif cardID == 12: # Early Assault
-                if battle.playerStatus[defendingPlayer][0] == "protected2":
-                    battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) protected themself from the attack!"
+                if battle.playerStatus[dpTurn][0] == "protected2":
+                    battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** protected themself from the attack!"
                 else:
-                    if battle.turns > 6 and battle.turns < 18:
+                    if battle.turns > 4 and battle.turns < 8:
                         if normal_criticalHitChance():
-                            damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                            damage = damageCalc(cardUsed.power * 1.5, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                             battle.outcome += "\n-> **Critical hit!**"
                         else:
-                            damage = damageCalc(cardUsed.power, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
-                    elif battle.turns <= 6:
+                            damage = damageCalc(cardUsed.power, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
+                    elif battle.turns <= 4:
                         if normal_criticalHitChance():
-                            damage = damageCalc((cardUsed.power * 2) * 1.5, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                            damage = damageCalc((cardUsed.power * 2) * 1.5, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                             battle.outcome += "\n-> **Critical hit!**"
                         else:
-                            damage = damageCalc((cardUsed.power * 2), battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
-                    elif battle.turns >= 18:
+                            damage = damageCalc((cardUsed.power * 2), battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
+                    elif battle.turns >= 8:
                         if normal_criticalHitChance():
-                            damage = damageCalc((cardUsed.power * 0.5) * 1.5, battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                            damage = damageCalc((cardUsed.power * 0.5) * 1.5, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                             battle.outcome += "\n-> **Critical hit!**"
                         else:
-                            damage = damageCalc((cardUsed.power * 0.5), battle.playerStats[battle.playerTurn][0], battle.playerStats[defendingPlayer][1])
+                            damage = damageCalc((cardUsed.power * 0.5), battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
                     
-                    if battle.playerStatus[defendingPlayer][0] == "protected":
+                    if battle.playerStatus[dpTurn][0] == "protected":
                         damage *= 0.15
                         battle.playerHP -= damage
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) immediately attacked {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}), but {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]})'s **Protection** reduced the damage and it only dealt {damage} HP damage!"
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** immediately attacked **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**, but **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s **Protection** reduced the damage and it only dealt {damage} HP damage!"
                     else:
                         battle.playerHP -= damage
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) immediately attacked {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}), which dealt {damage} HP damage!"
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** immediately attacked **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**, which dealt {damage} HP damage!"
+
+                    pHPDtemp -= damage
+                    
+            elif cardID == 13: # Snipe Shot
+                if battle.playerStatus[dpTurn][0] == "protected2":
+                    battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** protected themself from the attack!"
+                else:
+                    if normal_criticalHitChance():
+                        damage = damageCalc(cardUsed.power * 2, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
+                        battle.outcome += "\n-> **Critical hit!**"
+                    else:
+                        damage = damageCalc(cardUsed.power, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
+                        
+                        
+                    part = ""
+                    
+                    if damage >= 60:
+                        part = random.choice(["head", "chest", "genitals"])
+                    elif damage >= 35 and damage < 60:
+                        part = random.choice(["chest", random.choice(["left", "right"]) + "arm"])
+                    else:
+                        part = random.choice(["left", "right"]) + random.choice(["leg", "foot"])
+                    
+                    if battle.playerStatus[dpTurn][0] == "protected":
+                        damage *= 0.15
+                        battle.playerHP -= damage
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** shot **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** in the {part}, but **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s **Protection** reduced the damage and it only dealt {damage} HP damage!"
+                    else:
+                        battle.playerHP -= damage
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** shot **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** in the {part}, which dealt {damage} HP damage!"
+                    
+                    pHPDtemp -= damage
+                    
+            elif cardID == 14: # Chain
+                if battle.playerStats[pTurn][1] < 200 or battle.playerLimitBreak[pTurn]:
+                    battle.playerStats[pTurn][1] += 10
+                    battle.playerChainLevel[pTurn] += 1
+                    
+                    if battle.playerStats[pTurn][1] > 200 and not battle.playerLimitBreak[pTurn]:
+                        battle.playerStats[pTurn][1] = 200
+                        
+                    if battle.playerChainLevel[pTurn] == 1:
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** started a chain! Their Chain Level is currently at Level {battle.playerChainLevel[pTurn]}!"
+                    else:
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** extended their chain! Their Chain Level is currently at Level {battle.playerChainLevel[pTurn]}!"
+                else:
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s stats can no longer be increased!"
+            
+            elif cardID == 15: # Chain Breaker
+                if battle.playerChainLevel[dpTurn] > 0:
+                    if battle.playerStatus[dpTurn][0] == "protected2":
+                        battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** protected themself from the attack!"
+                    else:
+                        if normal_criticalHitChance():
+                            damage = damageCalc(cardUsed.power * (battle.playerChainLevel[dpTurn] * 0.75) * 1.5, battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
+                            battle.outcome += "\n-> **Critical hit!**"
+                        else:
+                            damage = damageCalc(cardUsed.power * (battle.playerChainLevel[dpTurn] * 0.75), battle.playerStats[pTurn][0], battle.playerStats[dpTurn][1])
+
+                        battle.playerStats[dpTurn][1] -= 10 * battle.playerChainLevel[dpTurn]
+                        battle.playerChainLevel[dpTurn] = 0
+                        
+                        crack = random.choice(["broke", "shattered", "ruined", "messed up"])
+                        
+                        if battle.playerStatus[dpTurn][0] == "protected":
+                            damage *= 0.15
+                            battle.playerHP -= damage
+                            battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** {crack} **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s Chain! Their **Protection** reduced the damage and it only dealt {damage} HP damage!"
+                        else:
+                            battle.playerHP -= damage
+                            battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** {crack} **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s Chain, dealing {damage} HP damage!"
+
+                        pHPDtemp -= damage
+                        battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s Chain has been reset and their Defense has been reduced!"
+                else:
+                    battle.outcome += f"\n-> The Card failed to work because the target has no active chain!"
+            
+            elif cardID == 16: # Revival
+                if battle.playerRevival[pTurn]:
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s **Revivable** status is already active!"
+                else:
+                    battle.playerRevival[pTurn] = True
+                    
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** has performed a ritual, allowing them to be revived on the verge of death!\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s **Revivable** status is now active!"
+            
+            elif cardID == 17: # Fissure
+                if battle.playerStatus[dpTurn][0] == "protected2":
+                    battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** protected themself from the attack!"
+                else:
+                    if battle.playerStatus[dpTurn][0] == "protected":
+                        pHPDtemp -= (battle.playerHP[dpTurn] - 1)
+                        battle.playerHP[dpTurn] = 1
+                        battle.outcome += f"\n-> The ground beneath **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** has cracked open! They fell, and survived with only 1 HP left!"
+                    else:
+                        pHPDtemp -= battle.playerHP[dpTurn]
+                        battle.playerHP[dpTurn] = 0
+                        battle.outcome += f"\n-> The ground beneath **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** has cracked open! They fell and die within the chasm!"
+            
+            elif cardID == 18: # Protect
+                if battle.playerStatus[pTurn][0] == "none":
+                    battle.playerStatus[pTurn] = ["protected", 1]
+                    
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** invoked a **Protection** status effect, protecting themselves for one turn!"
+                else:
+                    battle.outcome += f"\n-> The Card failed to work because the user has an active status effect!"
+            
+            elif cardID == 19: # Banishing Shield
+                if battle.lastUsedCard[pTurn] == None or battle.lastUsedCard[dpTurn] == None:
+                    battle.outcome += "\n-> The Card failed to work because both player have not used a Card once!"
+                elif battle.playerStatus[pTurn][0] != "none":
+                    battle.outcome += "\n-> The Card failed to work because the user has an active status effect!"
+                else:
+                    battle.playerStatus[pTurn] = ["protected3", 2]
+                    battle.playerBannedCards[pTurn].append(["banishing shield", -1])
+                    
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** projected an aura that will disable any Card that will target them!"
             
         elif not noUse:
             battle.outcome += "\n-> The Card failed the accuracy check and missed!"
-    elif cardSpecial and cardID != 1000:
+    elif cardSpecial and cardID != 1000 and not noUse:
         cardOU = cardUsed.originalUser
         
         if cardID == 1001: # Psychic Protect
-            battle.playerEnergy[battle.playerTurn] -= cardUsed.energycost
-            battle.pEnergyDeduct[battle.playerTurn] = f"{-cardUsed.energycost}"
+            battle.playerEnergy[pTurn] -= cardUsed.energycost
+            battle.pEnergyDeduct[pTurn] = f"{-cardUsed.energycost}"
             accu = 0
                     
-            if cardOU == battle.fighters[battle.playerTurn].id: # navyblue's Effect
-                if battle.playerUsedProtect[battle.playerTurn]:
-                    accu = accuracyCalc(35, battle.playerStats[battle.playerTurn][2], 100, cardUsed.appliesToSelf)
+            if cardOU == battle.fighters[pTurn].id: # navyblue's Effect
+                if battle.playerUsedProtect[pTurn]:
+                    accu = accuracyCalc(35, battle.playerStats[pTurn][2], 100, cardUsed.appliesToSelf)
                 else:
-                    accu = accuracyCalc(70, battle.playerStats[battle.playerTurn][2], 100, cardUsed.appliesToSelf)
+                    accu = accuracyCalc(70, battle.playerStats[pTurn][2], 100, cardUsed.appliesToSelf)
                     
                 if random.randint(1, 100) <= accu:
-                    if battle.playerStatus[battle.playerTurn][0] == "poison":
-                        battle.playerStatus[battle.playerTurn] = ["protected2", 1]
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s Card cured them of poisoning and protected themself for 1 turn!"
-                    elif battle.playerStatus[battle.playerTurn][0] == "protected" or battle.playerStatus[battle.playerTurn][0] == "protected2":
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s **Protection** is still in effect!"
+                    if battle.playerStatus[pTurn][0] == "poison":
+                        battle.playerStatus[pTurn] = ["protected2", 1]
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s Card cured them of poisoning and protected themself for 1 turn!"
+                    elif battle.playerStatus[pTurn][0] == "protected" or battle.playerStatus[pTurn][0] == "protected2":
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s **Protection** is still in effect!"
                     else:
-                        battle.playerStatus[battle.playerTurn] = ["protected2", 2]
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) protected themself for 2 turns!"
+                        battle.playerStatus[pTurn] = ["protected2", 2]
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** protected themself for 2 turns!"
                 else:
                     battle.outcome += "\nThe Card failed the accuracy check and missed!"
             else: # Normal User's Effect
-                if battle.playerUsedProtect[battle.playerTurn]:
-                    accuracyCalc(int(cardUsed.accuracy / 2), battle.playerStats[battle.playerTurn][2], 100, cardUsed.appliesToSelf)
+                if battle.playerUsedProtect[pTurn]:
+                    accuracyCalc(int(cardUsed.accuracy / 2), battle.playerStats[pTurn][2], 100, cardUsed.appliesToSelf)
                 else:
-                    accuracyCalc(cardUsed.accuracy, battle.playerStats[battle.playerTurn][2], 100, cardUsed.appliesToSelf)
+                    accuracyCalc(cardUsed.accuracy, battle.playerStats[pTurn][2], 100, cardUsed.appliesToSelf)
                 
                 if random.randint(1, 100) <= accu:
-                    if battle.playerStatus[battle.playerTurn][0] == "poison":
+                    if battle.playerStatus[pTurn][0] == "poison":
                         battle.outcome += "\n-> The Card failed to work due to a status effect overpowering it!"
-                    elif battle.playerStatus[battle.playerTurn][0] == "protected" or battle.playerStatus[battle.playerTurn][0] == "protected2":
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s **Protection** is still in effect!"
+                    elif battle.playerStatus[pTurn][0] == "protected" or battle.playerStatus[pTurn][0] == "protected2":
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s **Protection** is still in effect!"
                     else:
-                        battle.playerStatus[battle.playerTurn] = ["protected2", 1]
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) protected themself for 1 turn!"
+                        battle.playerStatus[pTurn] = ["protected2", 1]
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** protected themself for 1 turn!"
                 else:
                     battle.outcome += "\n-> The Card failed the accuracy check and missed!"
         
         elif cardID == 1002: # The Ban Hammer
-            if cardOU == battle.fighters[battle.playerTurn].id: # theAstra's Effect
-                battle.playerEnergy[battle.playerTurn] -= 7
-                battle.pEnergyDeduct[battle.playerTurn] = f"-7"
-                if random.randint(1, 100) <= accuracyCalc(55, battle.playerStats[battle.playerTurn][2], battle.playerStats[battle.playerTurn][3]):
-                    if battle.playerStatus[defendingPlayer][0] != "protected2":
-                        pHPDtemp -= battle.playerHP[defendingPlayer]
-                        battle.playerHP[defendingPlayer] = 0
+            if cardOU == battle.fighters[pTurn].id: # theAstra's Effect
+                battle.playerEnergy[pTurn] -= 7
+                battle.pEnergyDeduct[pTurn] = f"-7"
+                if random.randint(1, 100) <= accuracyCalc(55, battle.playerStats[pTurn][2], battle.playerStats[pTurn][3]):
+                    if battle.playerStatus[dpTurn][0] != "protected2":
+                        pHPDtemp -= battle.playerHP[dpTurn]
+                        battle.playerHP[dpTurn] = 0
                         
-                        if battle.playerRevival[defendingPlayer]:
-                            battle.playerRevival[defendingPlayer] = False
+                        if battle.playerRevival[dpTurn]:
+                            battle.playerRevival[dpTurn] = False
                             
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) " + random.choice(["delivered their verdict", "grasped the deadliest hammer", "took control of the ultimate weapon", "made their final decision"]) + f" and hit {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) with **The Ban Hammer**, which effectively " + random.choice(["decimated", "annihilated", "banished", "destroyed", "defeated", "erased"]) + " them!"
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** " + random.choice(["delivered their verdict", "grasped the deadliest hammer", "took control of the ultimate weapon", "made their final decision"]) + f" and hit **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** with **The Ban Hammer**, which effectively " + random.choice(["decimated", "annihilated", "banished", "destroyed", "defeated", "erased"]) + " them!"
                     else:
                         if random.randint(1, 100) <= 25:
-                            pHPDtemp -= battle.playerHP[defendingPlayer]
-                            battle.playerHP[defendingPlayer] = 0
+                            pHPDtemp -= battle.playerHP[dpTurn]
+                            battle.playerHP[dpTurn] = 0
                             
-                            battle.playerStatus[defendingPlayer] = ["none", 0]
-                            if battle.playerRevival[defendingPlayer]:
-                                battle.playerRevival[defendingPlayer] = False
+                            battle.playerStatus[dpTurn] = ["none", 0]
+                            if battle.playerRevival[dpTurn]:
+                                battle.playerRevival[dpTurn] = False
                             
-                            battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) " + random.choice(["delivered their verdict", "grasped the deadliest hammer", "took control of the ultimate weapon", "made their final decision"]) + f" and hit {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) with **The Ban Hammer**, which effectively " + random.choice(["decimated", "annihilated", "banished", "destroyed", "defeated", "erased"]) + " them!"
+                            battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** " + random.choice(["delivered their verdict", "grasped the deadliest hammer", "took control of the ultimate weapon", "made their final decision"]) + f" and hit **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** with **The Ban Hammer**, which effectively " + random.choice(["decimated", "annihilated", "banished", "destroyed", "defeated", "erased"]) + " them!"
                         else:
-                            battle.outcome += f"\n-> A mysterious protective power channelling through {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]})'s essence protected them from the grasp of {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s **The Ban Hammer**!"
+                            battle.outcome += f"\n-> A mysterious protective power channelling through **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s essence protected them from the grasp of **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s **The Ban Hammer**!"
                 
-                            if battle.playerStats[battle.playerTurn][2] >= 150:
+                            if battle.playerStats[pTurn][2] >= 150:
                                 pass
                             else:
-                                battle.playerStats[battle.playerTurn][2] += 10
+                                battle.playerStats[pTurn][2] += 10
                         
-                                if battle.playerStats[battle.playerTurn][2] > 150 and not battle.playerLimitBreak[battle.playerTurn]:
-                                    battle.playerStats[battle.playerTurn][2] = 150
+                                if battle.playerStats[pTurn][2] > 150 and not battle.playerLimitBreak[pTurn]:
+                                    battle.playerStats[pTurn][2] = 150
                             
-                                battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s Accuracy Stat increased by 10%!"
+                                battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s Accuracy Stat increased by 10%!"
                 else:
                     battle.outcome += "\n-> The Card failed the accuracy check and missed!"
                     
-                    if battle.playerStats[battle.playerTurn][2] >= 150:
+                    if battle.playerStats[pTurn][2] >= 150:
                         pass
                     else:
-                        battle.playerStats[battle.playerTurn][2] += 10
+                        battle.playerStats[pTurn][2] += 10
                         
-                        if battle.playerStats[battle.playerTurn][2] > 150 and not battle.playerLimitBreak[battle.playerTurn]:
-                            battle.playerStats[battle.playerTurn][2] = 150
+                        if battle.playerStats[pTurn][2] > 150 and not battle.playerLimitBreak[pTurn]:
+                            battle.playerStats[pTurn][2] = 150
                             
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s Accuracy Stat increased by 10%!"
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s Accuracy Stat increased by 10%!"
             else: # Normal User's Effect
-                battle.playerEnergy[battle.playerTurn] -= cardUsed.energycost
-                battle.pEnergyDeduct[battle.playerTurn] = f"{-cardUsed.energycost}"
+                battle.playerEnergy[pTurn] -= cardUsed.energycost
+                battle.pEnergyDeduct[pTurn] = f"{-cardUsed.energycost}"
                     
-                if random.randint(1, 100) <= accuracyCalc(cardUsed.accuracy, battle.playerStats[battle.playerTurn][2], battle.playerStats[battle.playerTurn][3]):
-                    if battle.playerStatus[defendingPlayer][0] != "protected2":
-                        pHPDtemp -= battle.playerHP[defendingPlayer]
-                        battle.playerHP[defendingPlayer] = 0
+                if random.randint(1, 100) <= accuracyCalc(cardUsed.accuracy, battle.playerStats[pTurn][2], battle.playerStats[pTurn][3]):
+                    if battle.playerStatus[dpTurn][0] != "protected2":
+                        pHPDtemp -= battle.playerHP[dpTurn]
+                        battle.playerHP[dpTurn] = 0
                         
-                        if battle.playerStatus[defendingPlayer][0] == "revival":
-                            battle.playerStatus[defendingPlayer] = ["none", 0]
+                        if battle.playerRevival[dpTurn]:
+                            battle.playerRevival[dpTurn] = False
                             
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) " + random.choice(["delivered their verdict", "grasped the deadliest hammer", "took control of the ultimate weapon", "made their final decision"]) + f" and hit {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) with **The Ban Hammer**, which effectively " + random.choice(["decimated", "annihilated", "banished", "destroyed", "defeated", "erased"]) + " them!"
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** " + random.choice(["delivered their verdict", "grasped the deadliest hammer", "took control of the ultimate weapon", "made their final decision"]) + f" and hit **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** with **The Ban Hammer**, which effectively " + random.choice(["decimated", "annihilated", "banished", "destroyed", "defeated", "erased"]) + " them!"
                     else:
                         if random.randint(1, 100) <= 25:
-                            pHPDtemp -= battle.playerHP[defendingPlayer]
-                            battle.playerHP[defendingPlayer] = 0
+                            pHPDtemp -= battle.playerHP[dpTurn]
+                            battle.playerHP[dpTurn] = 0
                             
-                            battle.playerStatus[defendingPlayer] = ["none", 0]
-                            battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) " + random.choice(["delivered their verdict", "grasped the deadliest hammer", "took control of the ultimate weapon", "made their final decision"]) + f" and hit {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) with **The Ban Hammer**, which effectively " + random.choice(["decimated", "annihilated", "banished", "destroyed", "defeated", "erased"]) + " them!"
+                            battle.playerStatus[dpTurn] = ["none", 0]
+                            if battle.playerRevival[dpTurn]:
+                                battle.playerRevival[dpTurn] = False
+                                
+                            battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** " + random.choice(["delivered their verdict", "grasped the deadliest hammer", "took control of the ultimate weapon", "made their final decision"]) + f" and hit **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** with **The Ban Hammer**, which effectively " + random.choice(["decimated", "annihilated", "banished", "destroyed", "defeated", "erased"]) + " them!"
                         else:
-                            battle.outcome += f"\n-> A mysterious protective power channelling through {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]})'s essence protected them from the grasp of {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s **The Ban Hammer**!"
+                            battle.outcome += f"\n-> A mysterious protective power channelling through **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s essence protected them from the grasp of **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s **The Ban Hammer**!"
                             
-                            if battle.playerStats[battle.playerTurn][2] >= 150:
+                            if battle.playerStats[pTurn][2] >= 150:
                                 pass
                             else:
-                                battle.playerStats[battle.playerTurn][2] += 5
+                                battle.playerStats[pTurn][2] += 5
                         
-                                if battle.playerStats[battle.playerTurn][2] > 150 and not battle.playerLimitBreak[battle.playerTurn]:
-                                    battle.playerStats[battle.playerTurn][2] = 150
+                                if battle.playerStats[pTurn][2] > 150 and not battle.playerLimitBreak[pTurn]:
+                                    battle.playerStats[pTurn][2] = 150
                             
-                                battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s Accuracy Stat increased by 5%!"
+                                battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s Accuracy Stat increased by 5%!"
                 else:
                     battle.outcome += "\n-> The Card failed the accuracy check and missed!"
                     
-                    if battle.playerStats[battle.playerTurn][2] >= 150:
+                    if battle.playerStats[pTurn][2] >= 150:
                         pass
                     else:
-                        battle.playerStats[battle.playerTurn][2] += 5
+                        battle.playerStats[pTurn][2] += 5
                         
-                        if battle.playerStats[battle.playerTurn][2] > 150 and not battle.playerLimitBreak[battle.playerTurn]:
-                            battle.playerStats[battle.playerTurn][2] = 150
+                        if battle.playerStats[pTurn][2] > 150 and not battle.playerLimitBreak[pTurn]:
+                            battle.playerStats[pTurn][2] = 150
                             
-                        battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s Accuracy Stat increased by 5%!"
+                        battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s Accuracy Stat increased by 5%!"
     
         elif cardID == 1003: # The Eclipse
-            battle.playerEnergy[battle.playerTurn] -= cardUsed.energycost
-            battle.pEnergyDeduct[battle.playerTurn] = f"{-cardUsed.energycost}"
+            battle.playerEnergy[pTurn] -= cardUsed.energycost
+            battle.pEnergyDeduct[pTurn] = f"{-cardUsed.energycost}"
             accu = 1
             
-            if battle.playerHasHealed[battle.playerTurn]:
-                accu = accuracyCalc(int(cardUsed.accuracy * 0.75), battle.playerStats[battle.playerTurn][2], battle.playerStats[defendingPlayer][3])
+            if battle.playerHasHealed[pTurn]:
+                accu = accuracyCalc(int(cardUsed.accuracy * 0.75), battle.playerStats[pTurn][2], battle.playerStats[dpTurn][3])
             else:
-                accu = accuracyCalc(cardUsed.accuracy, battle.playerStats[battle.playerTurn][2], battle.playerStats[defendingPlayer][3])
+                accu = accuracyCalc(cardUsed.accuracy, battle.playerStats[pTurn][2], battle.playerStats[dpTurn][3])
             
             if random.randint(1, 100) <= accu:
-                if battle.playerStats[defendingPlayer][2] <= 50 or battle.playerStats[battle.playerTurn][2] <= 50:
+                if battle.playerStats[dpTurn][2] <= 50 or battle.playerStats[pTurn][2] <= 50:
                     battle.outcome += "\n-> One of the players' accuracy can no longer be reduced further!"
                 else:
                     battle.outcome += "\n-> The eclipse has occurred and darkness spreads! "
                     
-                    if cardOU == battle.fighters[battle.playerTurn].id: # SanskariHydra's Effect
-                        battle.playerStats[defendingPlayer][2] -= 30
-                        battle.playerStats[battle.playerTurn][2] -= 10
+                    if cardOU == battle.fighters[pTurn].id: # SanskariHydra's Effect
+                        battle.playerStats[dpTurn][2] -= 30
+                        battle.playerStats[pTurn][2] -= 10
                     
-                        if battle.playerStats[defendingPlayer][2] < 50:
-                            battle.playerStats[defendingPlayer][2] = 50
+                        if battle.playerStats[dpTurn][2] < 50:
+                            battle.playerStats[dpTurn][2] = 50
                         
-                        if battle.playerStats[battle.playerTurn][2] < 50:
-                            battle.playerStats[battle.playerTurn][2] = 50
+                        if battle.playerStats[pTurn][2] < 50:
+                            battle.playerStats[pTurn][2] = 50
                         
-                        battle.playerHP[battle.playerTurn] += int(150 * 0.7)
-                        battle.playerHasHealed[battle.playerTurn] = True
+                        battle.playerHP[pTurn] += int(200 * 0.75)
+                        battle.playerHasHealed[pTurn] = True
                     
-                        if battle.playerHP[battle.playerTurn] > 200:
-                            battle.playerHP[battle.playerTurn] = 200
+                        if battle.playerHP[pTurn] > 200:
+                            battle.playerHP[pTurn] = 200
                             
-                        battle.outcome += f"-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) and {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s Accuracy stats were reduced by 30% and 10%, respectively. {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) also healed by 70% the maximum HP!"
+                        battle.outcome += f"-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** and **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s Accuracy stats were reduced by 30% and 10%, respectively. **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** also healed by 70% the maximum HP!"
                     else: # Normal User's Effect
-                        battle.playerStats[defendingPlayer][2] -= 25
-                        battle.playerStats[battle.playerTurn][2] -= 15
+                        battle.playerStats[dpTurn][2] -= 25
+                        battle.playerStats[pTurn][2] -= 15
                     
-                        if battle.playerStats[defendingPlayer][2] < 50:
-                            battle.playerStats[defendingPlayer][2] = 50
+                        if battle.playerStats[dpTurn][2] < 50:
+                            battle.playerStats[dpTurn][2] = 50
                         
-                        if battle.playerStats[battle.playerTurn][2] < 50:
-                            battle.playerStats[battle.playerTurn][2] = 50
+                        if battle.playerStats[pTurn][2] < 50:
+                            battle.playerStats[pTurn][2] = 50
                         
-                        battle.playerHP[battle.playerTurn] += int(150 * 0.35)
-                        battle.playerHasHealed[battle.playerTurn] = True
+                        battle.playerHP[pTurn] += int(200 * 0.4)
+                        battle.playerHasHealed[pTurn] = True
                     
-                        if battle.playerHP[battle.playerTurn] > 200:
-                            battle.playerHP[battle.playerTurn] = 200
+                        if battle.playerHP[pTurn] > 200:
+                            battle.playerHP[pTurn] = 200
                             
-                        battle.outcome += f"-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) and {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s Accuracy stats were reduced by 25% and 15%, respectively. {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) also healed by 35% the maximum HP!"
+                        battle.outcome += f"-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** and **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s Accuracy stats were reduced by 25% and 15%, respectively. **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** also healed by 35% the maximum HP!"
             else:
                 battle.outcome += "\n-> The Card failed the accuracy check and missed!"
                 
         elif cardID == 1004: # Guard Break
-            battle.playerEnergy[battle.playerTurn] -= cardUsed.energycost
-            battle.pEnergyDeduct[battle.playerTurn] = f"{-cardUsed.energycost}"
+            battle.playerEnergy[pTurn] -= cardUsed.energycost
+            battle.pEnergyDeduct[pTurn] = f"{-cardUsed.energycost}"
             
-            if random.randint(1, 100) <= accuracyCalc(cardUsed.accuracy, battle.playerStats[battle.playerTurn][2], 100, cardUsed.appliesToSelf):
-                if battle.playerStats[battle.playerTurn][1] <= 20 or (battle.playerStats[battle.playerTurn][3] >= 150 and not battle.playerLimitBreak[battle.playerTurn]):
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s stats cannot be lowered or raised any further!"
+            if random.randint(1, 100) <= accuracyCalc(cardUsed.accuracy, battle.playerStats[pTurn][2], 100, cardUsed.appliesToSelf):
+                if battle.playerStats[pTurn][1] <= 20 or (battle.playerStats[pTurn][3] >= 150 and not battle.playerLimitBreak[pTurn]):
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s stats cannot be lowered or raised any further!"
                 else:
-                    battle.playerStats[battle.playerTurn][1] -= 75
-                    battle.playerStats[battle.playerTurn][3] += 150
+                    battle.playerStats[pTurn][1] -= 75
+                    battle.playerStats[pTurn][3] += 150
                     
-                    if battle.playerStats[battle.playerTurn][1] < 20:
-                        battle.playerStats[battle.playerTurn] = 20
+                    if battle.playerStats[pTurn][1] < 20:
+                        battle.playerStats[pTurn] = 20
                     
-                    if battle.playerStats[battle.playerTurn][3] > 150  and not battle.playerLimitBreak[battle.playerTurn]:
-                        battle.playerStats[battle.playerTurn] = 150
+                    if battle.playerStats[pTurn][3] > 150  and not battle.playerLimitBreak[pTurn]:
+                        battle.playerStats[pTurn] = 150
                         
-                    battle.playerBannedCards[battle.playerTurn].append(["guard break", -1])
+                    battle.playerBannedCards[pTurn].append(["guard break", -1])
                     
-                    battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) broke their guard, maximizing their Evasion but harshly lowering their Defense!"
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** broke their guard, maximizing their Evasion but harshly lowering their Defense!"
             else:
                 battle.outcome += "\n-> The Card failed the accuracy check and missed!"
                 
         elif cardID == 1005: # Limit Break
-            battle.playerEnergy[battle.playerTurn] -= cardUsed.energycost
-            battle.pEnergyDeduct[battle.playerTurn] = f"{-cardUsed.energycost}"
+            if battle.lastUsedCard[pTurn] != None:
+                battle.playerEnergy[pTurn] -= cardUsed.energycost
+                battle.pEnergyDeduct[pTurn] = f"{-cardUsed.energycost}"
             
-            if random.randint(1, 100) <= accuracyCalc(cardUsed.accuracy, battle.playerStats[battle.playerTurn][2], 100, cardUsed.appliesToSelf):
-                battle.playerLimitBreak[battle.playerTurn] = True        
-                battle.playerBannedCards[battle.playerTurn].append(["limit break", -1])
+                if random.randint(1, 100) <= accuracyCalc(cardUsed.accuracy, battle.playerStats[pTurn][2], 100, cardUsed.appliesToSelf):
+                    battle.playerLimitBreak[pTurn] = True        
+                    battle.playerBannedCards[pTurn].append(["limit break", -1])
                     
-                battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) broke their limit, unlocking their true potential!"
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** broke their limit, unlocking their true potential!"
+                else:
+                    battle.outcome += "\n-> The Card failed the accuracy check and missed!"
             else:
-                battle.outcome += "\n-> The Card failed the accuracy check and missed!"
+                battle.outcome += "\n-> The Card failed to work!"
                     
-    else: # 50% - 1 E; 20% - 2 E; 15% - 3 E; 10% - 4 E; 5% - 5 E
-        if battle.playerEnergy[battle.playerTurn] < 10:
+    elif used == "restore" and not noUse: # 50% - 1 E; 20% - 2 E; 15% - 3 E; 10% - 4 E; 5% - 5 E
+        if battle.playerEnergy[pTurn] < 10:
             energyplus = random.choice([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5])
-            battle.playerEnergy[battle.playerTurn] += energyplus
-            battle.pEnergyDeduct[battle.playerTurn] = f"+{energyplus}"
+            battle.playerEnergy[pTurn] += energyplus
+            battle.pEnergyDeduct[pTurn] = f"+{energyplus}"
             
             if energyplus > 1:
-                if battle.playerEnergy[battle.playerTurn] > 10:
-                    battle.playerEnergy[battle.playerTurn] = 10
+                if battle.playerEnergy[pTurn] > 10:
+                    battle.playerEnergy[pTurn] = 10
         
-        battle.outcome = f"-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) "+ random.choice(["decided to rest!", "decided to take a break for a short time!", "wants to chill down for now!", "bolstered up their morale!"] + "\n-> **Energy has been restored.**")
+        battle.outcome = f"-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** "+ random.choice(["decided to rest!", "decided to take a break for a short time!", "wants to chill down for now!", "bolstered up their morale!"]) + "\n-> **Energy has been restored.**"
     
     if cardID != 4:
-        battle.playerUsedJS[battle.playerTurn] = False
+        battle.playerUsedJS[pTurn] = False
         
     if not (cardID == 7 or cardID == 1003):
-        battle.playerHasHealed[battle.playerTurn] = False
+        battle.playerHasHealed[pTurn] = False
         
     if cardID != 9:
-        battle.playerUsedMute[battle.playerTurn] = False
+        battle.playerUsedMute[pTurn] = False
         
-    if cardID == 1001:
-        battle.playerUsedProtect[battle.playerTurn] = True
+    if cardID == 1001 or cardID == 18:
+        battle.playerUsedProtect[pTurn] = True
     else:
-        battle.playerUsedProtect[battle.playerTurn] = False
+        battle.playerUsedProtect[pTurn] = False
     
     a = 0
     while a < 2:
@@ -924,72 +1106,72 @@ def what_happens(used: str, battle: Battle):
         
         a += 1
     
-    if battle.playerHP[defendingPlayer] <= 0:
-        battle.playerHP[defendingPlayer] = 0
-        if battle.playerRevival[defendingPlayer]:
-            battle.playerRevival[defendingPlayer] = False
-            battle.playerHP[defendingPlayer] = 75
-            pHPDtemp += 75
-            battle.outcome += f"\n-> {battle.fighters[defendingPlayer]}'s **Revival** took effect and revived them from their death!"
+    if battle.playerHP[dpTurn] <= 0:
+        battle.playerHP[dpTurn] = 0
+        if battle.playerRevival[dpTurn]:
+            battle.playerRevival[dpTurn] = False
+            battle.playerHP[dpTurn] = 100
+            pHPDtemp += 100
+            battle.outcome += f"\n-> {battle.fighters[dpTurn]}'s **Revival** took effect and revived them from their death!"
         else:
-            battle.playerStatus[defendingPlayer][0] = "dead"
-            battle.pHPDeduct[defendingPlayer] = f"{pHPDtemp}"
+            battle.playerStatus[dpTurn][0] = "dead"
+            battle.pHPDeduct[dpTurn] = f"{pHPDtemp}"
             battle.endBattle = True
             return
     
-    if battle.playerStatus[defendingPlayer][0] == "protected2" or battle.playerStatus[defendingPlayer][0] == "protected":
-        battle.playerStatus[defendingPlayer][1] -= 1
-        if battle.playerStatus[defendingPlayer][1] <= 0:
-            battle.playerStatus[defendingPlayer] = ["none", 0]
+    if "protected" in battle.playerStatus[dpTurn][0]:
+        battle.playerStatus[dpTurn][1] -= 1
+        if battle.playerStatus[dpTurn][1] <= 0:
+            battle.playerStatus[dpTurn] = ["none", 0]
             
-    if battle.playerStatus[battle.playerTurn][0] == "poison":
-        if battle.playerStatus[battle.playerTurn][1] - 1 <= 0:
-            battle.playerHP[battle.playerTurn] -= int(150 * 0.05)
-            battle.playerStatus[battle.playerTurn] = ["none", 0]
-            battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) lost 5% HP due to poisoning!\n**{battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]})'s poisoning has been cured.**"
+    if battle.playerStatus[pTurn][0] == "poison":
+        if battle.playerStatus[pTurn][1] - 1 <= 0:
+            battle.playerHP[pTurn] -= int(200 * 0.05)
+            battle.playerStatus[pTurn] = ["none", 0]
+            battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** lost 5% HP due to poisoning!\n-> ****{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s poisoning has been cured.**"
         else:
-            battle.playerStatus[battle.playerTurn][1] -= 1
-            battle.playerHP[battle.playerTurn] -= int(150 * 0.05)
-            battle.outcome += f"\n-> {battle.fighters[battle.playerTurn].display_name} (Battler {battle.playerTurn + 1}: {battle.fighters[battle.playerTurn]}) lost 5% HP due to poisoning!"
+            battle.playerStatus[pTurn][1] -= 1
+            battle.playerHP[pTurn] -= int(200 * 0.05)
+            battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** lost 5% HP due to poisoning!"
             
-        if battle.playerHP[battle.playerTurn] <= 0:
-            if battle.playerRevival[battle.playerTurn]:
-                battle.playerRevival[battle.playerTurn] = False
-                battle.playerHP[battle.playerTurn] = 75
-                battle.pHPDeduct[battle.playerTurn] = f"+75"
-                battle.outcome += f"\n-> {battle.fighters[defendingPlayer]}'s **Revival** took effect and revived them from their death!"
+        if battle.playerHP[pTurn] <= 0:
+            if battle.playerRevival[pTurn]:
+                battle.playerRevival[pTurn] = False
+                battle.playerHP[pTurn] = 75
+                battle.pHPDeduct[pTurn] = f"+75"
+                battle.outcome += f"\n-> {battle.fighters[dpTurn]}'s **Revival** took effect and revived them from their death!"
             else:
-                battle.playerStatus[battle.playerTurn] = ["dead", 0]
-                battle.pHPDeduct[battle.playerTurn] = f"-{int(150 * 0.05)}"
+                battle.playerStatus[pTurn] = ["dead", 0]
+                battle.pHPDeduct[pTurn] = f"-{int(200 * 0.05)}"
             return
         else:
-            if battle.playerHasHealed[battle.playerTurn]:
+            if battle.playerHasHealed[pTurn]:
                 if cardID == 7:
-                    battle.pHPDeduct[battle.playerTurn] = f"+{60 - int(150 * 0.05)}"
+                    battle.pHPDeduct[pTurn] = f"+{60 - int(200 * 0.05)}"
                 elif cardID == 1003:
-                    if cardOU == battle.fighters[battle.playerTurn].id:
-                        battle.pHPDeduct[battle.playerTurn] = f"+{int(150 * 0.7) - int(150 * 0.05)}"
+                    if cardOU == battle.fighters[pTurn].id:
+                        battle.pHPDeduct[pTurn] = f"+{int(200 * 0.7) - int(200 * 0.05)}"
                     else:
-                        battle.pHPDeduct[battle.playerTurn] = f"+{int(150 * 0.35) - int(150 * 0.05)}"
+                        battle.pHPDeduct[pTurn] = f"+{int(200 * 0.35) - int(200 * 0.05)}"
                         
             else:
-                battle.pHPDeduct[battle.playerTurn] = f"-{int(150 * 0.05)}"
+                battle.pHPDeduct[pTurn] = f"-{int(200 * 0.05)}"
             
     if pHPDtemp > 0:
-        battle.pHPDeduct[defendingPlayer] = f"+{pHPDtemp}"
+        battle.pHPDeduct[dpTurn] = f"+{pHPDtemp}"
     else:
-        battle.pHPDeduct[defendingPlayer] = f"{pHPDtemp}"
+        battle.pHPDeduct[dpTurn] = f"{pHPDtemp}"
         
-    if battle.playerFlinched[defendingPlayer] or battle.playerStatus[defendingPlayer][0] == "blocked":
-        if battle.playerFlinched[defendingPlayer]:
-            battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) flinched and couldn't move!"
+    if battle.playerFlinched[dpTurn] or battle.playerStatus[dpTurn][0] == "blocked":
+        if battle.playerFlinched[dpTurn]:
+            battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** flinched and couldn't move!"
         else:
-            battle.outcome += f"\n-> {battle.fighters[defendingPlayer].display_name} (Battler {defendingPlayer + 1}: {battle.fighters[defendingPlayer]}) couldn't use any Card and skipped a turn!"
-            battle.playerStatus[defendingPlayer][1] -= 1
+            battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** couldn't use any Card and skipped a turn!"
+            battle.playerStatus[dpTurn][1] -= 1
     else:
-        if battle.playerTurn == 0:
+        if pTurn == 0:
             battle.playerTurn = 1
-        elif battle.playerTurn == 1:
+        elif pTurn == 1:
             battle.playerTurn = 0
             
     return

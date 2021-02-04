@@ -5,9 +5,9 @@ from typing import Optional
 
 # Third-party Modules and APIs
 import discord
-from discord.errors import DiscordException, Forbidden
 from discord.ext import commands, tasks
 import asyncio
+from discord.ext.commands.errors import CommandError
 from dotenv import load_dotenv
 
 # Custom/Developer-defined Modules
@@ -23,7 +23,7 @@ else:
     quit(1)
 
 # Global Variables
-isAlpha = False
+isAlpha = True
 
 # Customized Bot class (subclass of discord.ext.commands.Bot)
 class Bot(commands.Bot):
@@ -64,7 +64,42 @@ def createHighScoresFile():
         print("highscores.mhjson loaded.")
     except OSError:
         print("highscores.mhjson loaded.")
+
+def snReady():
+    try:
+        f = open(constants.CurrentDirectory + "/data/.sn", "r")
+        f.close()
         
+        print("SN file loaded.")
+    except FileNotFoundError:
+        print("SN file not found.")
+        quit(1)
+                
+def snAdd():
+    sNum = 0
+    
+    try:
+        f = open(constants.CurrentDirectory + "/data/.sn", "r")
+        sNum = f.read()
+        f.close()
+        
+    except:
+        print("Error operation on file '.sn' (6)")
+        return -1
+    
+    sNum = int(sNum)
+    sNum += 1
+    
+    try:
+        f = open(constants.CurrentDirectory + "/data/.sn", "w")
+        f.write(str(sNum))
+        f.close()
+        
+        return sNum
+    except:
+        print("Error operation on file '.sn' (7)")
+        return -1
+
 def isServerValid(ctx):
     try:
         for x in constants.ServerIDs:
@@ -242,7 +277,7 @@ bot.remove_command('help')
 
 setChangelog(bot) # Load changelog
 createHighScoresFile() # Load highscores.mhjson
-
+snReady() # Ready the SN file
 
 # Cogs and Commands Setup (Bot Setup, Part 2 of 4)
 # Miscellaneous Commands
@@ -313,6 +348,32 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
             await ctx.send(content = None, embed = embed)
         except discord.errors.Forbidden:
             await ctx.channel.send(f"{ctx.author.mention}, the bot is unable to send the requested data! Please grant the bot the \"Embed Links\" permission or ask an admin / moderator to do so.")
+    
+    @commands.command(hidden = True, help = "Allows the user to make a suggestion.")
+    async def suggest(self, ctx, *, args: Optional[str]):
+        if not isServerValid(ctx):
+            print(f"{ctx.author} attempted to send a command on non-whitelisted server \"{ctx.guild}\"")
+            return
+        
+        sNum = snAdd()
+        if sNum == -1:
+            await ctx.send("Command failed!")
+            raise CommandError("error in sn file")
+        
+        embed = discord.Embed(title = f"Suggestion #{sNum}")
+        embed.colour = random.randint(0, 0xffffff)
+        
+        if ctx.channel.id == constants.Suggestions[0]:
+            await ctx.message.delete()
+            
+            if args.isspace() or args == "":
+                await ctx.send(f"{ctx.author.mention}, please add what to suggest!")
+                return
+            else:
+                embed.description = f"Suggested by {ctx.author}:\n\"{args}\""
+                embed.set_footer(icon_url = discord.User.avatar_url_as(ctx.author, size = 64), text = f"\"c.suggest <suggestions>\" is the command.")
+                await ctx.send(f"{ctx.author.mention}, your suggestion has been added!")
+                await bot.get_channel(constants.Suggestions[1]).send(content = None, embed = embed)
     
     @commands.command(aliases = ("ping",), help = "Displays the latency of the bot in milliseconds.", brief = "Displays the latency")
     async def latency(self, ctx):
@@ -431,7 +492,7 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
 
         try:
             if random.randint(1, 100) <= 30:
-                await ctx.channel.send(content = random.choice(["Note: Special Cards have a 25% chance of being added to a User's deck, except for their respective Users which have their own Special Card automatically added into their hand.", "Note: Cards in each of the player's decks in battle are randomized.", "Note: The ranges of stats of a player are 20 - 200 for Attack & Defense, and 50 - 150 for Accuracy and Evasion."]), embed = embed)
+                await ctx.channel.send(content = random.choice(["Note: Special Cards have a 5% chance of being added to a User's deck, except for their respective Users which have their own Special Card automatically added into their hand.", "Note: Cards in each of the player's decks in battle are randomized.", "Note: The ranges of stats of a player are 20 - 200 for Attack & Defense, and 50 - 150 for Accuracy and Evasion."]), embed = embed)
             else:
                 await ctx.channel.send(content = None, embed = embed)
         except discord.errors.Forbidden:
@@ -497,10 +558,18 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
         
         embed = discord.Embed(title = f"More Card Information")
         
+        cl = moveInfo.classification.split(",", 1)
+        clinfo = ""
+        
+        if len(cl) == 1:
+            clinfo = cl[0].title()
+        elif len(cl) == 2:
+            clinfo = f"{cl[0].title()} / {cl[1].title()}"
+        
         if moveInfo.isSpecial:  
-            embed.description = f"**Card Name**: {moveInfo.name} (ID: {moveInfo.id})\n**Classification**: {moveInfo.classification.title()} [Special]\n**Power**: {moveInfo.power}\n**Accuracy**: {moveInfo.accuracy}\n**Energy Cost**: {moveInfo.energycost}"
+            embed.description = f"**Card Name**: {moveInfo.name} (ID: {moveInfo.id})\n**Classification/s**: {clinfo} [Special]\n**Card Power**: {moveInfo.power}\n**Accuracy**: {moveInfo.accuracy}%\n**Energy Cost**: {moveInfo.energycost} Energy"
         else:
-            embed.description = f"**Card Name**: {moveInfo.name} (ID: {moveInfo.id})\n**Classification**: {moveInfo.classification.title()} [Universal]\n**Power**: {moveInfo.power}\n**Accuracy**: {moveInfo.accuracy}\n**Energy Cost**: {moveInfo.energycost}"
+            embed.description = f"**Card Name**: {moveInfo.name} (ID: {moveInfo.id})\n**Classification/s**: {clinfo} [Universal]\n**Card Power**: {moveInfo.power}\n**Accuracy**: {moveInfo.accuracy}%\n**Energy Cost**: {moveInfo.energycost} Energy"
         
         embed.add_field(name = "**Card Description**:", value = f"\"{moveInfo.description}\"")
         embed.add_field(name = "**Battle Effect/s**:", value = moveInfo.effectDesc)
@@ -538,7 +607,7 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
         elif challengee.id == 170353794134179840 and challengee.status == discord.Status.offline:
             await ctx.send(f"{ctx.author.mention}, you can't do that, that's against the rules!")
             return # If Creo's challenged but he's offline
-        elif ctx.author.id == challengee.id: # If the challenger tries to battle itself
+        elif ctx.author.id == challengee.id and not ctx.guild.id == constants.ServerIDs[0]: # If the challenger tries to battle itself
             await ctx.send(f"{ctx.author.mention}, you can't battle yourself!")
             return
         elif checkIfInAnyBattle(challengee, bot): # If a challengee is already in a battle
@@ -589,8 +658,8 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
             if await battle_in(ctx, cardUsed, battle):
                 await battle_out(ctx, battle)
     
-    @commands.command(aliases = ("rest", "restore", "pass", "skip"), hidden = True)
-    async def refresh(self, ctx):
+    @commands.command(aliases = ("rest", "refresh", "pass", "skip"), hidden = True)
+    async def restore(self, ctx):
         if not isServerValid(ctx):
             print(f"{ctx.author} attempted to send a command on non-whitelisted server \"{ctx.guild}\"")
             return
@@ -606,7 +675,7 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
             battles.what_happens("restore", battle)
             await battle_out(ctx, battle)
     
-    @commands.command(aliases = ("resign",), hidden = True, help = "Surrender in a Card Battle. This will result to opposition victory.")
+    @commands.command(aliases = ("resign", "retreat", "giveup"), hidden = True, help = "Surrender in a Card Battle. This will result to opposition victory.")
     async def surrender(self, ctx):
         if not isServerValid(ctx):
             print(f"{ctx.author} attempted to send a command on non-whitelisted server \"{ctx.guild}\"")

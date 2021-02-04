@@ -1,7 +1,7 @@
 ***Pre-Release 0 - The Creation***
--> Implemented first foundation of Card Battle
+-> Implemented the first foundation of Card Battle
 -> Implemented 6 first Universal Cards and 2 first Special Cards
--> Implemented all needed commands
+-> Implemented all/most needed commands
 -> Implemented emote response
 
 **Pre-Release 1**
@@ -31,7 +31,7 @@
 -> Implemented `c.resign` which ends the battle with an opposition victory.
 [Self-Implemented]
 -> Implemented and modified a new Universal Card: **Warn**
--> Implemented and modified a new Special Card: **The Eclipse** (ID: 1003)
+-> Introduced and implemented a new Special Card: **The Eclipse** (ID: 1003)
 -> Implemented the ability to select a Card by the position of said Card in the user's deck of Cards
 -> Implemented `c.changelog` (yet another forgotten feature)
 -> Buffed the accuracy stat change of Card "Potion of Invisibility" (+10% instead of +5%)
@@ -54,7 +54,7 @@
 
 ***Beta 1.0 - Rewritten Update***
 -> Rewritten the code, not necessarily from the ground up though (lol)
--> Implemented two new Special Cards: **Guard Break** and **Limit Break**
+-> Introduced and implemented two new Special Cards: **Guard Break** and **Limit Break**
 -> Implemented and modified three new Universal Cards: **Mute**, **Ban**, and **Push**
 -> Implemented Card Classifications (Offensive, Defensive, Miscellaneous) so you can be sure you always have at least one of each
 -> Implemented support for multiple battles -- but not in the same channels (Inspired by the late Pokecord)
@@ -75,7 +75,7 @@
 -> Fixed many bugs that have been encountered during the program rewrite
 
 **Beta 1.1 - Small Update 1**
--> Implemented a new Universal Card: **Early Assault**
+-> Introduced and implemented a new Universal Card: **Early Assault**
 -> Made the battle summary screen to show the current turn of the battle
 -> Changed `c.skip` to `c.restore`, with an implemented energy restoration effect for the player [Suggested by MarwanPGX]
 =-> There is a chance that the player can regenerate 4 to 5 Energy as opposed to a maximum of 3 Energy normally
@@ -89,3 +89,30 @@
 **Beta 1.11 - Quick Update 1**
 -> Increased maximum HP to 200
 -> Fixed **Early Assault** displaying the wrong Card Power in `c.cardinfo`
+
+***Beta 1.2 - Reworked Update 1***
+-> Introduced a new Card Classification: **Support Cards**
+-> Introduced and implemented a new Universal Card: **Banishing Shield**
+-> Implemented and modified five new Universal Cards: **Snipe Shot**, **Chain**, **Chain Breaker**, **Revival**, and **Protect**
+-> Renamed **Ban** to **Banishing Slam**
+-> Nerfed a handful of Cards:
+=-> **Warn** & **Mute**: Reduced Card accuracy (65% -> 60% / 60% -> 50%)
+=-> **Banishing Slam**: Reduced Card accuracy (55% -> 40%) and no longer inflicts Flinching
+=-> **Early Assault**: Lowered the total turns for doubled Card Power (6 -> 4) and halved Card Power (18 -> 8) and will now fail after a total of 12 turns
+=-> **Psychic Protect**: Increased energy cost (5 -> 6)
+=-> **Limit Break**: No longer works if the user hasn't used a Card in their first turn
+-> Buffed a few Cards:
+=-> **Healing Potion** & **The Eclipse**: Increased the amount of HP healed by 5%
+=-> **The Ban Hammer**: Can now bypass **Disabling Aura**
+=-> **Guard Break**: Reduced the amount of Defense decreased (75 -> 70)
+-> Drastically reduced the chance of getting a Special Card in deck, back to the original chance (25% -> 10%)
+=-> This is because the previous chance made Special Cards much more common than what was expected
+-> Increased the number of Cards a player's deck can have by 1 (8 -> 9)
+-> Tweaked the summary screen. Some of these changes are as follows:
+=-> Added an additional field in the summary screen that shows whether Limit Break is active or not if the player has said Card
+=-> Added an extra '+' in the player's status effect field if the player's **Revival** effect is active
+=-> The "Protected" text has now distinctions to differentiate what Card has been used
+-> Reclassified some Cards and added a second Classification on some Cards
+-> Modified changelog (for the fourth time)
+-> Fixed a bug that **Restore** can be affected by **Banishing Slam** when it's not supposed to
+-> Fixed a bug that the HP deducted and restored are lower than expected

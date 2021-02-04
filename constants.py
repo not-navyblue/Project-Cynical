@@ -8,6 +8,8 @@ UserIDs = {
 
 # In order: devServer, Creosphere, testServer
 ServerIDs = [789340106233741372, 667327481191333909, 798763455888752651]
+# In order: #suggestions-box, #suggestions-list
+Suggestions = [806807107646783509, 802117618931859456]
 
 EmoteIndex = {
     "stroke": 0,
