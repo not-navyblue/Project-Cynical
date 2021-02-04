@@ -23,7 +23,7 @@ else:
     quit(1)
 
 # Global Variables
-isAlpha = True
+isAlpha = False
 
 # Customized Bot class (subclass of discord.ext.commands.Bot)
 class Bot(commands.Bot):
