@@ -114,5 +114,8 @@
 =-> The "Protected" text has now distinctions to differentiate what Card has been used
 -> Reclassified some Cards and added a second Classification on some Cards
 -> Modified changelog (for the fourth time)
--> Fixed a bug that **Restore** can be affected by **Banishing Slam** when it's not supposed to
--> Fixed a bug that the HP deducted and restored are lower than expected
+-> Bug fixes
+
+***Beta 1.21 - Quick Update 2***
+-> Fixed a major bug that affects **Early Assault**, **Push**, and **Chain Breaker**
+-> Fixed a couple of visual bugs

@@ -315,8 +315,11 @@ def displayBattle(battle: Battle):
                     if y == None:
                         pass
                     elif y[0] == x:
-                        value += f"~~[{z}] {x}~~, ".title()
-                        isBanned = True
+                        if y[1] == -1 or y[1] > 0:
+                            value += f"~~[{z}] {x}~~, ".title()
+                            isBanned = True
+                        else:
+                            battle.playerBannedCards[a].remove(y)
             
             if not isBanned:
                 value += f"**[{z}]** {x}, ".title()
@@ -328,10 +331,10 @@ def displayBattle(battle: Battle):
             for x in battle.playerBannedCards[a]:
                 if x[0] == battle.playerCards[a][8]:
                     if x[1] == -1 or x[1] > 0:
-                        value += f"~~[{z}] {battle.playerCards[a][7]}~~".title()
+                        value += f"~~[{z}] {battle.playerCards[a][8]}~~".title()
                         isBanned = True
                     else:
-                        battle.playerBannedCards.remove(x)
+                        battle.playerBannedCards[a].remove(x)
                     
         if not isBanned:
             value += f"**[{z}]** {battle.playerCards[a][8]}".title()
@@ -495,7 +498,7 @@ def what_happens(used: str, battle: Battle):
                         pHPDtemp -= int(damage - damage * 0.85)
                         battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** punched **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** in the {random.choice(['face', 'gut', 'chest'])}, but **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s **Protect** reduced the damage and it dealt {damage} HP damage!"
                         del damage
-                    elif battle.playerStatus[dpTurn] == "protected2":
+                    elif battle.playerStatus[dpTurn][0] == "protected2":
                         battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** protected themself from the attack!"
             
             elif cardID == 1: # Super Punch
@@ -662,7 +665,7 @@ def what_happens(used: str, battle: Battle):
                     battle.outcome += f"\n!tempmute {battle.fighters[dpTurn].mention} {randomDuration}d the The"
                     battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** has muted **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**, disabling their Card \"{battle.lastUsedCard[dpTurn].title()}\", preventing them from using it for {randomDuration} turns!"
             
-            elif cardID == 10: # Ban
+            elif cardID == 10: # Banishing Slam
                 if battle.lastUsedCard[dpTurn] == None:
                     battle.outcome += f"\n-> The Card failed to work because {battle.fighters[dpTurn].display_name} (Battler {dpTurn + 1}) hasn't used a Card at least once!"
                 elif "protected" in battle.playerStatus[dpTurn][0]:
@@ -717,10 +720,10 @@ def what_happens(used: str, battle: Battle):
                     
                     if battle.playerStatus[dpTurn][0] == "protected":
                         damage *= 0.15
-                        battle.playerHP -= damage
+                        battle.playerHP[dpTurn] -= damage
                         battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** immediately attacked **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**, but **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s **Protection** reduced the damage and it only dealt {damage} HP damage!"
                     else:
-                        battle.playerHP -= damage
+                        battle.playerHP[dpTurn] -= damage
                         battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** immediately attacked **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**, which dealt {damage} HP damage!"
 
                     pHPDtemp -= damage
@@ -747,10 +750,10 @@ def what_happens(used: str, battle: Battle):
                     
                     if battle.playerStatus[dpTurn][0] == "protected":
                         damage *= 0.15
-                        battle.playerHP -= damage
+                        battle.playerHP[dpTurn] -= damage
                         battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** shot **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** in the {part}, but **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s **Protection** reduced the damage and it only dealt {damage} HP damage!"
                     else:
-                        battle.playerHP -= damage
+                        battle.playerHP[dpTurn] -= damage
                         battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** shot **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** in the {part}, which dealt {damage} HP damage!"
                     
                     pHPDtemp -= damage
@@ -788,10 +791,10 @@ def what_happens(used: str, battle: Battle):
                         
                         if battle.playerStatus[dpTurn][0] == "protected":
                             damage *= 0.15
-                            battle.playerHP -= damage
+                            battle.playerHP[dpTurn] -= damage
                             battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** {crack} **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s Chain! Their **Protection** reduced the damage and it only dealt {damage} HP damage!"
                         else:
-                            battle.playerHP -= damage
+                            battle.playerHP[dpTurn] -= damage
                             battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** {crack} **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s Chain, dealing {damage} HP damage!"
 
                         pHPDtemp -= damage
