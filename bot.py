@@ -1,7 +1,7 @@
 import os, time
 
 print("Checking for updates...")
-if os.system("git pull https://github.com/navyblue44/Project-Cynical.git") == 0:
+if os.system("git clone https://github.com/navyblue44/Project-Cynical.git") == 0:
     print("Auto-update successful.")
 else:
     print("Auto-update failed.")
