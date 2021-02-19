@@ -3,3 +3,4 @@ python_dotenv >= 0.15.0
 hjson ~= 3.0.2
 aiosqlite == 0.16.1
 libneko >= 0.24.9
+mee6_py_api == 0.0.1
