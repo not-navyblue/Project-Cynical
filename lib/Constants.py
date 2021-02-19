@@ -16,7 +16,7 @@ EmoteIndex = {
     "sick": 1
 }
 
-isAlpha = True
+isAlpha = False
 
 level_ranges = {
     "Unranked": range(0, 5), 

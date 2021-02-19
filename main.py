@@ -99,7 +99,7 @@ DeveloperID = int(os.getenv("developerID"))
 bot = Bot(command_prefix = lambda _, message: message.content[:2] if isAlpha and message.content.lower().startswith("c-") else message.content[:2] if message.content.lower().startswith("c+") and not isAlpha else Constants.bot_mention[isAlpha], status = discord.Status.idle)
 bot.activity = discord.Game("Project Cynical")
 bot.owner_id = DeveloperID
-bot.noMEE6 = True
+#bot.noMEE6 = True
 bot.remove_command('help')
 
 bot.eco = CynicEconomy(Constants.CurrentDirectory + "/data/")
