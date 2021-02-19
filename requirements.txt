@@ -1,2 +1,5 @@
-discord.py>=1.6.0
-python_dotenv>=0.15.0
+discord.py >= 1.6.0
+python_dotenv >= 0.15.0
+hjson ~= 3.0.2
+aiosqlite == 0.16.1
+libneko >= 0.24.9

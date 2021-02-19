@@ -1,5 +1,9 @@
-from cards import Card, SpecialCard
-from constants import UserIDs
+if __name__ == "__main__":
+    import sys, os
+    sys.path.append(os.getcwd())
+
+from cards.cards import Card, SpecialCard
+from lib.Constants import UserIDs
 
 offensiveCards = {
     "punch": Card(0, "Punch", 15, 95, 1, "The basic attack.", "No additional effects.", "offensive"),
@@ -39,7 +43,7 @@ SpecialCards = {
     "the ban hammer": SpecialCard(1002, "The Ban Hammer", 999, 30, 9, "begone.", "Guaranteed to bypass **Revival**, **Protection**, and **Disabling Aura**, and has a chance to bypass **Psyched Protection**. For each miss or fail, increase user's accuracy by 5%.", UserIDs["theAstra"], "Accuracy is boosted to 55% and Energy cost is reduced to 7 Energy. Increases user's accuracy by 10% instead if the move fails or misses.", "offensive"),
     "the eclipse": SpecialCard(1003, "The Eclipse", -1, 70, 5, "The worlds align and the eclipse falls, spreading darkness around the world.", "Reduces the accuracy of all players in battle (opponent's: 25 / user's: 15) and the user is healed by 40% the maximum HP. Successive use reduces the Card's accuracy by 25%. Fails if either player's accuracy can no longer be deducted.", UserIDs["SanskariHydra"], "Opponent's accuracy is reduced by 30 and user's accuracy is reduced by 10 instead. User's heals by double the percent any other user heals (70% instead of 35%).", "defensive,support"),
     "guard break": SpecialCard(1004, "Guard Break", -1, 100, 7, "I'm weak.", "Maximizes user's Evasion but lowers Defense by 70. Fails if user's stats cannot be lowered or raised further. Once used, this Card can no longer be used for the rest of the battle (essentially Disabling itself).", 0, "No additional effects.", "defensive,miscellaneous", True),
-    "limit break": SpecialCard(1005, "Limit Break", -1, 100, 10, "UNLIMITED POWER!!!", "Breaks the maximum limit of the user's stats, allowing for abnormally high stats. Once used, this Card can no longer be used for the rest of the battle (essentially Disabling itself). Fails if the User hasn't used a prior Card.", 0, "No additional effects.", "miscellaneous", True)
+    "limit break": SpecialCard(1005, "Limit Break", -1, 100, 10, "UNLIMITED POWER!!!", "Breaks the maximum limit of the user's stats, but erases 50% of the user's maximum HP. Once used, this Card can no longer be used for the rest of the battle (essentially Disabling itself). Fails if the User hasn't used a prior Card or if the user has less than 50% of the maximum HP.", 0, "No additional effects.", "miscellaneous", True)
 }
 
 UniversalCards = []

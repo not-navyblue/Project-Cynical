@@ -1,9 +1,14 @@
+if __name__ == "__main__":
+    import sys, os
+    sys.path.append(os.getcwd())
+
 import discord
 from discord.errors import NotFound
-from discord.ext.commands.errors import NoPrivateMessage
-import cardDefines as cards
+from cards import cardDefines as cards
+from lib.livedb import LiveDatabase as LiveDB
 import random
-import constants
+from lib.Constants import number_format
+import libneko
 
 class Battle:
     def __init__(self, channelID: int, fighters: list):
@@ -22,10 +27,12 @@ class Battle:
         self.playerBannedCards = [list(), list()] # Card name, Length of ban (-1 means until the end of battle)
         self.playerStatus = [["none", 0], ["none", 0]] # Status, Duration (0 means none, -1 means until certain conditions occur)
         # "none" - Normal; "protected" - Protect; "protected2" - Psychic Protect; "protected3" - Banishing Shield
-        # "poisoned" - Poison; "blocked" - Blocked
+        # "blocked" - Blocked
         self.playerStats = [[100, 100, 100, 100], [100, 100, 100, 100]] # Attack, Defense, Accuracy, Evasion
         self.playerChainLevel = [0, 0] # For the Cards "Chain" and "Chain Breaker"
         self.playerHP = [200, 200]
+        self.globalMaxHP = 200
+        self.playerMaxHP = [200, 200]
         self.playerEnergy = [10, 10]
         self.playerLimitBreak = [False, False] # Did user break its limits?
         self.playerUsedJS = [False, False] # Did user use Jump Scare?
@@ -34,11 +41,14 @@ class Battle:
         self.playerHasHealed = [False, False] # Did user heal?
         self.playerRevival = [False, False] # Is user Revivable?
         self.playerFlinched = [False, False] # Did user flinch?
+        self.playerPoisoned = [[False, 0], [False, 0]] # Did player got poisoned?
+        self.playerCharging = [[False, -1, None], [False, -1, None]] # Is user charging for an attack?
         self.pHPDeduct = ["0", "0"]
         self.pEnergyDeduct = ["0", "0"]
                                          # set 1  #  # set 2  #  # set 3  #  # set 4  #
         self.playerTurn = random.choice([0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1])
         self.turns = 1
+        self.timeout = 0
         
         self.outcome = "The battle has just begun!"
         
@@ -48,7 +58,7 @@ class Battle:
 def initBattle(battle: Battle):
     random.seed(random.randint(-10737418240, 10737418235))
     
-    regularCardChance = 90 # Chances that a player will get a non-Special Card.
+    regularCardChance = 99 # Chances that a player will get a non-Special Card.
     x = ""; doesNotExist = True; z = 0
     battle.playerTurn = random.randint(0, 1)
     battle.isBattling = True
@@ -249,9 +259,7 @@ def displayBattle(battle: Battle):
         elif a == 1:
             b = 0
             
-        if battle.playerStatus[a][0] == "poison":
-            playerStatusDisplay[a] = "Poisoned"
-        elif battle.playerStatus[a][0] == "blocked":
+        if battle.playerStatus[a][0] == "blocked":
             playerStatusDisplay[a] = "Blocked"
         elif battle.playerStatus[a][0] == "protected":
             playerStatusDisplay[a] = "Protected (**Protection**)"
@@ -267,6 +275,12 @@ def displayBattle(battle: Battle):
         if battle.playerRevival[a]:
             playerStatusDisplay[a] += "+"
         
+        if battle.playerPoisoned[a][0] == True:
+            playerStatusDisplay[a] += ", Poisoned" 
+            
+        if battle.playerCharging[a][0]:
+            playerStatusDisplay[a] += f", Vulnerable"
+        
         if battle.playerFlinched[a]:
             playerStatusDisplay[a] += ", Flinched"
             
@@ -276,12 +290,12 @@ def displayBattle(battle: Battle):
             battle.winner = battle.fighters[b]
             battle.winNum = b
             battle.outcome += f"\n-> {battle.fighters[a].display_name} ({battle.fighters[a]}) " + random.choice(["was defeated in battle!", "got too tired and collapsed!", "couldn't handle it anymore and called for a time out!", "died!"])
-        elif battle.playerStatus[a][0] == "surrendered":
-            playerStatusDisplay[a] = "Defeated (Surrendered)"
+        elif battle.playerStatus[a][0] == "timeout":
+            playerStatusDisplay[a] = "Defeated (Time Out)"
             battle.endBattle = True
             battle.winner = battle.fighters[b]
             battle.winNum = b
-            battle.outcome = f"-> {battle.fighters[a].display_name} ({battle.fighters[a]}) has " + random.choice(["surrendered", "retreated", "resigned", "given up"]) + "!"
+            battle.outcome = f"=> {battle.fighters[a].display_name} ({battle.fighters[a]}) has " + random.choice(["ran out of time", "didn't make it in time", "failed to make a move in time", "disconnected", "went away"]) + "!"
         
         if battle.playerStatus[a] == ["blocked", 0]:
             battle.playerStatus[a] = ["none", 0]
@@ -297,7 +311,7 @@ def displayBattle(battle: Battle):
         battle.endBattle = True
         battle.outcome += "\n-> The battle has automatically ended!"
     
-    embed = discord.Embed(title = f"Card Battle (Turn {battle.turns // 2 + 1} [Total: {battle.turns}])")
+    embed = libneko.Embed(title = f"Card Battle (Turn {(battle.turns + 1) // 2} [Total: {battle.turns}])")
     embed.colour = random.randint(0, 0xffffff)
     
     while a < 2:
@@ -412,6 +426,7 @@ def what_happens(used: str, battle: Battle):
     battle.turns += 1
     pTurn = battle.playerTurn
     noUse = False
+    luc = battle.lastUsedCard[pTurn]
     damage = 0
     pHPDtemp = 0
     
@@ -437,12 +452,19 @@ def what_happens(used: str, battle: Battle):
         else:
             battle.pEnergyDeduct[dpTurn] = "+1"
     
-    battle.outcome = f"=> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** used the Card \"**{cardUsed.name}**\"!"
+    if not (used in ["fissure", "the ban hammer"] and battle.playerCharging[pTurn][1] != 0) and cardID != 1000:
+        battle.outcome += f"=> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** used the Card \"**{cardUsed.name}**\"!"
+    elif used in ["fissure", "the ban hammer"] and battle.playerCharging[pTurn][1] == -1:
+        battle.outcome += f"=> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** is charging power!"
+        battle.playerCharging[pTurn] = [True, 2 if used in ["the ban hammer"] else 1, used]
+        noUse = True
     
-    if used != "restore":
+    if not used in ["restore", "fissure", "the ban hammer"]:
+        battle.lastUsedCard[pTurn] = used
+    elif used in ["fissure", "the ban hammer"] and battle.playerCharging[pTurn][1] == 0:
         battle.lastUsedCard[pTurn] = used
     
-    if not cardUsed.appliesToSelf and (battle.playerStatus[dpTurn][0] == "protected3" and battle.playerStatus[dpTurn][1] > 0):
+    if (not (cardUsed.appliesToSelf or (used in ["fissure", "the ban hammer"] and battle.playerCharging[pTurn][1] == 0)) and (battle.playerStatus[dpTurn][0] == "protected3" and battle.playerStatus[dpTurn][1] > 0)):
         if cardID != 1002:
             battle.playerEnergy[pTurn] -= cardUsed.energycost
             battle.pEnergyDeduct[pTurn] = f"{-cardUsed.energycost}"
@@ -614,13 +636,13 @@ def what_happens(used: str, battle: Battle):
                     battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** drank a Potion of Invisibility and increased their Evasion stat by 5%!"
 
             elif cardID == 6: # Poison Target
-                if battle.playerStatus[dpTurn][0] == "poison":
+                if battle.playerPoisoned[dpTurn][0]:
                     battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** is already currently poisoned!"
-                elif battle.playerStatus[dpTurn][0] == "blocked" or battle.playerStatus[dpTurn][0] == "protected" or battle.playerStatus[dpTurn][0] == "protected2":
-                    battle.outcome += f"\nThe Card failed to work because of **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})**'s status overpowering it!"
+                elif battle.playerStatus[dpTurn][0] == "protected" or battle.playerStatus[dpTurn][0] == "protected2":
+                    battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** protected themself from being poisoned!"
                 else:
                     turns = random.randint(2, 5)
-                    battle.playerStatus[dpTurn] = ["poison", turns]
+                    battle.playerPoisoned[dpTurn] = [True, turns]
                     battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** consumed a poisoned "+ random.choice(["hamburger", "soda", "spaghetti", "sandwich", "slice of cake", "candy", "water", "garlic bread", "hotdog"]) + f" that was given by **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** and got poisoned for {turns} turns!"
         
             elif cardID == 7: # Healing Potion
@@ -633,16 +655,15 @@ def what_happens(used: str, battle: Battle):
                     if battle.playerHP[pTurn] > 200:
                         battle.playerHP[pTurn] = 200
                 
-                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** drank the Healing Potion™ and was healed by 40% the maximum HP!"
+                    battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** drank the Healing Potion™ and was healed by 45% the maximum HP!"
                 
-                    if battle.playerStatus[pTurn][0] == "poison":
+                    if battle.playerPoisoned[pTurn][0]:
                         if random.randint(1, 100) <= 30:
-                            battle.playerStatus[pTurn] == ["none", 0]
-                            battle.pHPDeduct[pTurn] = "+60"
+                            battle.playerPoisoned[pTurn] = [False, 0]
+                            battle.pHPDeduct[pTurn] = "+90"
                             battle.outcome += f" The potion also cured **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** of their poisoning!"
                     else:
-                        battle.pHPDeduct[pTurn] = "+60"
-                        battle.outcome += f" The potion also cured **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** of their poisoning!"
+                        battle.pHPDeduct[pTurn] = "+90"
             
             elif cardID == 8: # Warn
                 if battle.playerStatus[dpTurn][0] == "blocked" or battle.playerStatus[dpTurn][0] == "protected" or battle.playerStatus[dpTurn][0] == "protected2":
@@ -671,8 +692,6 @@ def what_happens(used: str, battle: Battle):
                 elif "protected" in battle.playerStatus[dpTurn][0]:
                     battle.outcome += f"\n-> {battle.fighters[dpTurn].display_name} (Battler {dpTurn + 1}) protected themselves from the effects of the Card!"
                 else:
-                    battle.playerFlinched[dpTurn] = True
-                    
                     battle.playerBannedCards[dpTurn].append([battle.lastUsedCard[dpTurn], -1])
                     battle.playerBannedCards[pTurn].append(["ban", -1])
             
@@ -822,7 +841,7 @@ def what_happens(used: str, battle: Battle):
                         pHPDtemp -= battle.playerHP[dpTurn]
                         battle.playerHP[dpTurn] = 0
                         battle.outcome += f"\n-> The ground beneath **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** has cracked open! They fell and die within the chasm!"
-            
+                       
             elif cardID == 18: # Protect
                 if battle.playerStatus[pTurn][0] == "none":
                     battle.playerStatus[pTurn] = ["protected", 1]
@@ -859,8 +878,9 @@ def what_happens(used: str, battle: Battle):
                     accu = accuracyCalc(70, battle.playerStats[pTurn][2], 100, cardUsed.appliesToSelf)
                     
                 if random.randint(1, 100) <= accu:
-                    if battle.playerStatus[pTurn][0] == "poison":
+                    if battle.playerPoisoned[pTurn][0]:
                         battle.playerStatus[pTurn] = ["protected2", 1]
+                        battle.playerPoisoned[pTurn] = [False, 0]
                         battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s Card cured them of poisoning and protected themself for 1 turn!"
                     elif battle.playerStatus[pTurn][0] == "protected" or battle.playerStatus[pTurn][0] == "protected2":
                         battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s **Protection** is still in effect!"
@@ -876,9 +896,7 @@ def what_happens(used: str, battle: Battle):
                     accuracyCalc(cardUsed.accuracy, battle.playerStats[pTurn][2], 100, cardUsed.appliesToSelf)
                 
                 if random.randint(1, 100) <= accu:
-                    if battle.playerStatus[pTurn][0] == "poison":
-                        battle.outcome += "\n-> The Card failed to work due to a status effect overpowering it!"
-                    elif battle.playerStatus[pTurn][0] == "protected" or battle.playerStatus[pTurn][0] == "protected2":
+                    if battle.playerStatus[pTurn][0] == "protected" or battle.playerStatus[pTurn][0] == "protected2":
                         battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s **Protection** is still in effect!"
                     else:
                         battle.playerStatus[pTurn] = ["protected2", 1]
@@ -1058,10 +1076,10 @@ def what_happens(used: str, battle: Battle):
                 battle.outcome += "\n-> The Card failed the accuracy check and missed!"
                 
         elif cardID == 1005: # Limit Break
-            if battle.lastUsedCard[pTurn] != None:
-                battle.playerEnergy[pTurn] -= cardUsed.energycost
-                battle.pEnergyDeduct[pTurn] = f"{-cardUsed.energycost}"
+            battle.playerEnergy[pTurn] -= cardUsed.energycost
+            battle.pEnergyDeduct[pTurn] = f"{-cardUsed.energycost}"
             
+            if battle.lastUsedCard[pTurn] != None or battle.playerHP[pTurn] - (battle.playerMaxHP[pTurn] / 2) > 0:
                 if random.randint(1, 100) <= accuracyCalc(cardUsed.accuracy, battle.playerStats[pTurn][2], 100, cardUsed.appliesToSelf):
                     battle.playerLimitBreak[pTurn] = True        
                     battle.playerBannedCards[pTurn].append(["limit break", -1])
@@ -1070,11 +1088,18 @@ def what_happens(used: str, battle: Battle):
                 else:
                     battle.outcome += "\n-> The Card failed the accuracy check and missed!"
             else:
-                battle.outcome += "\n-> The Card failed to work!"
+                battle.outcome += "\n-> The Card failed to work because the user " + "has not enough HP" if battle.playerHP[pTurn] - 100 <= 0 else "hasn't used a Card before" + "!"
                     
-    elif used == "restore" and not noUse: # 50% - 1 E; 20% - 2 E; 15% - 3 E; 10% - 4 E; 5% - 5 E
+    elif used == "restore" and not noUse:
+        # Not charging: 50% - 1 E; 20% - 2 E; 15% - 3 E; 10% - 4 E; 5% - 5 E
+        # Charging: 90% - 1 E, 10% 2 E
+        
         if battle.playerEnergy[pTurn] < 10:
-            energyplus = random.choice([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5])
+            if battle.playerCharging[pTurn][0]:
+                energyplus = random.choice([1, 1, 1, 1, 1, 1, 1, 1, 1, 2])
+            else:
+                energyplus = random.choice([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5])
+                
             battle.playerEnergy[pTurn] += energyplus
             battle.pEnergyDeduct[pTurn] = f"+{energyplus}"
             
@@ -1082,7 +1107,7 @@ def what_happens(used: str, battle: Battle):
                 if battle.playerEnergy[pTurn] > 10:
                     battle.playerEnergy[pTurn] = 10
         
-        battle.outcome = f"-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** "+ random.choice(["decided to rest!", "decided to take a break for a short time!", "wants to chill down for now!", "bolstered up their morale!"]) + "\n-> **Energy has been restored.**"
+        battle.outcome = f"=> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** "+ random.choice(["decided to rest!", "decided to take a break for a short time!", "wants to chill down for now!", "bolstered up their morale!"]) + "\n-> **Energy has been restored.**"
     
     if cardID != 4:
         battle.playerUsedJS[pTurn] = False
@@ -1127,21 +1152,21 @@ def what_happens(used: str, battle: Battle):
         if battle.playerStatus[dpTurn][1] <= 0:
             battle.playerStatus[dpTurn] = ["none", 0]
             
-    if battle.playerStatus[pTurn][0] == "poison":
-        if battle.playerStatus[pTurn][1] - 1 <= 0:
+    if battle.playerPoisoned[pTurn][0]:
+        if battle.playerPoisoned[pTurn][1] - 1 <= 0:
             battle.playerHP[pTurn] -= int(200 * 0.05)
-            battle.playerStatus[pTurn] = ["none", 0]
+            battle.playerPoisoned[pTurn] = [False, 0]
             battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** lost 5% HP due to poisoning!\n-> ****{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})**'s poisoning has been cured.**"
         else:
-            battle.playerStatus[pTurn][1] -= 1
+            battle.playerPoisoned[pTurn][1] -= 1
             battle.playerHP[pTurn] -= int(200 * 0.05)
             battle.outcome += f"\n-> **{battle.fighters[pTurn].display_name} ({battle.fighters[pTurn]})** lost 5% HP due to poisoning!"
             
         if battle.playerHP[pTurn] <= 0:
             if battle.playerRevival[pTurn]:
                 battle.playerRevival[pTurn] = False
-                battle.playerHP[pTurn] = 75
-                battle.pHPDeduct[pTurn] = f"+75"
+                battle.playerHP[pTurn] = 100
+                battle.pHPDeduct[pTurn] = f"+100"
                 battle.outcome += f"\n-> {battle.fighters[dpTurn]}'s **Revival** took effect and revived them from their death!"
             else:
                 battle.playerStatus[pTurn] = ["dead", 0]
@@ -1168,15 +1193,25 @@ def what_happens(used: str, battle: Battle):
     if battle.playerFlinched[dpTurn] or battle.playerStatus[dpTurn][0] == "blocked":
         if battle.playerFlinched[dpTurn]:
             battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** flinched and couldn't move!"
-        else:
+        elif battle.playerStatus[dpTurn][0] == "blocked":
             battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** couldn't use any Card and skipped a turn!"
             battle.playerStatus[dpTurn][1] -= 1
+
+        if battle.playerCharging[dpTurn][0]:
+            battle.outcome += f"\n-> **{battle.fighters[dpTurn].display_name} ({battle.fighters[dpTurn]})** lost focus and their stored power has been reduced to zero!"
+            battle.playerCharging[dpTurn] = [False, -1, None]
     else:
         if pTurn == 0:
-            battle.playerTurn = 1
+            battle.playerTurn = pTurn = 1
         elif pTurn == 1:
-            battle.playerTurn = 0
-            
+            battle.playerTurn = pTurn = 0
+    
+    if battle.playerCharging[pTurn][0]:
+        battle.playerCharging[pTurn][1] -= 1
+        
+        if battle.playerCharging[pTurn][1] == 0:
+            what_happens(battle.playerCharging[pTurn][2], battle)
+        
     return
             
 
@@ -1202,129 +1237,73 @@ def normal_criticalHitChance():
 def increased_criticalHitChance():
     return random.randint(0, 100) <= 40
 
-def setHighScore(number: int, battle: Battle, changeScore: int = 1):
-    f = open(constants.CurrentDirectory + "/data/highscores.mhjson", "r", encoding = "utf-8")
-    lis = []
-    lis2 = list()
-    lis3 = list()
+async def update_scores(win: int, battle: Battle, db: LiveDB, changeScore: int = 1):
+    f = None
+    loss = 0 if win == 1 else 1
+    id = [battle.fighters[win].id, battle.fighters[loss].id]
     
-    for g in f.readlines():
-        if g != "{\n" and g != "}":
-            lis3 = g.replace("\t", "").replace("\n", "")
-            lis.append(lis3.split(": ", 1))
-        else:
-            lis.append(g)
-    del lis3
-    f.close()
-    
-    for l in lis:
-        if l != "{\n" and l != "}":
-            l = [int(l[0]), int(l[1])]
-        lis2.append(l)
-    lis = lis2
-    del lis2
-    
-    y = 0
-    stri = ""
-    isFound = False
-    
-    for x in lis:
-        if x == "}":
-            if isFound:
-                stri += "}"
-            else:
-                stri += f"\t{changeScore}: {battle.fighters[number].id}\n" + "}"
-        elif x == "{\n":
-            stri += "{\n"
-        else:
-            if x[1] == battle.fighters[number].id:
-                lis[y][0] = x[0] + changeScore
-                stri += f"\t{lis[y][0]}: {lis[y][1]}\n"
-                isFound = True
-        y += 1
-        
-    f = open(constants.CurrentDirectory + "/data/highscores.mhjson", "w", encoding = "utf-8")
-    f.write(stri)
-    f.close()
-    return
+    await db.set_scores(id[0], "win")
+    await db.set_scores(id[1], "loss")
 
-async def getHighScores(client: discord.Client, requested: discord.User):
-    lis = []
-    embed = discord.Embed(title = "CCGbot High Scores")
-    f = open(constants.CurrentDirectory + "/data/highscores.mhjson", "r", encoding = "utf-8")
-    
-    for g in f.readlines():
-        if g != "{\n" and g != "}":
-            lis2 = g.replace("\n", "").replace("\t", "")
-            lis2 = lis2.split(": ", 1)
-            lis2[0] = int(lis2[0])
-            lis.append(lis2)
-            
-    mergeSort(lis)
+async def get_scores(client: discord.Client, db: LiveDB, requested: discord.User):
+    num = 1
+    lis = await db.get_all_scores()
     lis.reverse()
     
-    for x in lis:
-        x[1] = int(x[1])
-    
-    num = 1
     s = ""
-    
     for profile in lis:
-        if num > 10:
+        if num > 15:
             break
         else:
             try:
-                s += f"{num}. <@{profile[1]}> ({await client.fetch_user(profile[1])}): {profile[0]} win/s\n"
+                s += f"{num}. <@{profile[0]}> "
+                
+                if num == 1:
+                    s += ":crown: "
+                elif num <= 3:
+                    s += ":star2: "
+                
+                s += f"(**{await client.fetch_user(profile[0])}**): {number_format(profile[3] * 100)}% W/L Rate ({profile[1]} Wins / {profile[2]} Losses)\n"
             except NotFound:
-                s += f"{num}. <@{profile[1]}> ([MissingUser]): {profile[0]} win/s\n"
+                s += f"{num}. <@{profile[0]}> "
+                
+                if num == 1:
+                    s += ":crown: "
+                elif num <= 3:
+                    s += ":star2: "
+                
+                s += f"(**MissingUser**): {number_format(profile[3] * 100)}% W/L Rate ({profile[1]} Wins / {profile[2]} Losses)\n"
             num += 1
+    
+    embed = libneko.Embed(title = f"Project Cynical High Scores:")
+    embed.add_field(name = f"Top {num - 1} Scores (Win-Loss Rate):", value = s)
     
     t = ""
     num = 1
     for profile in lis:
-        if profile[1] == requested.id:
+        if profile[0] == requested.id:
             try:
-                t = f"{num}. <@{profile[1]}> ({await client.fetch_user(profile[1])}): {profile[0]} win/s\n"
+                t = f"{num}. <@{profile[0]}> "
+                
+                if num == 1:
+                    t += ":crown: "
+                elif num <= 3:
+                    t += ":star2: "
+                
+                t += f"(**{await client.fetch_user(profile[0])}**): {number_format(profile[3] * 100)}% W/L Rate ({profile[1]} Wins / {profile[2]} Losses)\n"
                 break
             except NotFound:
-                t = f"{num}. <@{profile[1]}> ([MissingUser]): {profile[0]} win/s\n"
+                t = f"{num}. <@{profile[0]}> "
+                
+                if num == 1:
+                    t += ":crown: "
+                elif num <= 3:
+                    t += ":star2: "
+                
+                t += f"(**MissingUser**): {number_format(profile[3] * 100)}% W/L Rate ({profile[1]} Wins / {profile[2]} Losses)\n"
                 break
-        
-        num += 1
-        
-    if t == "":
-        t = f"{num}. {requested.mention} ({requested}): 0 win/s\n"
+        else:
+            num += 1
+    embed.description = f"**Your Score**:\n{t}"
     
-    embed.add_field(name = "Top 10 Scores", value = s)
-    embed.add_field(name = "Your Score:", value = t)
     return embed
-    
-def mergeSort(arr):
-    if len(arr) > 1:
-        
-        r = len(arr)//2
-        leftArr = arr[:r]
-        rightArr = arr[r:]
-        
-        mergeSort(leftArr)
-        mergeSort(rightArr)
-        
-        i = j = k = 0
-        while i < len(leftArr) and j < len(rightArr):
-            if leftArr[i] < rightArr[j]:
-                arr[k] = leftArr[i]
-                i += 1
-            else:
-                arr[k] = rightArr[j]
-                j += 1
-            k += 1
-
-        while i < len(leftArr):
-            arr[k] = leftArr[i]
-            i += 1
-            k += 1
-            
-        while j < len(rightArr):
-            arr[k] = rightArr[j]
-            j += 1
-            k += 1

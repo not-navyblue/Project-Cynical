@@ -52,7 +52,7 @@
 -> Fixed a bug that `c.resign` didn't work
 -> Fixed a bug that `c.leaderboards` would either not display the high scores embed or just display some random string characters
 
-***Beta 1.0 - Rewritten Update***
+***Beta 1.0 - Rewritten Update 1***
 -> Rewritten the code, not necessarily from the ground up though (lol)
 -> Introduced and implemented two new Special Cards: **Guard Break** and **Limit Break**
 -> Implemented and modified three new Universal Cards: **Mute**, **Ban**, and **Push**
@@ -97,7 +97,7 @@
 -> Renamed **Ban** to **Banishing Slam**
 -> Nerfed a handful of Cards:
 =-> **Warn** & **Mute**: Reduced Card accuracy (65% -> 60% / 60% -> 50%)
-=-> **Banishing Slam**: Reduced Card accuracy (55% -> 40%) and no longer inflicts Flinching
+=-> **Banishing Slam**: Reduced Card accuracy (55% -> 40%) ~~and no longer inflicts Flinching~~ [Forgotten, implemented in Beta 2.0]
 =-> **Early Assault**: Lowered the total turns for doubled Card Power (6 -> 4) and halved Card Power (18 -> 8) and will now fail after a total of 12 turns
 =-> **Psychic Protect**: Increased energy cost (5 -> 6)
 =-> **Limit Break**: No longer works if the user hasn't used a Card in their first turn
@@ -119,3 +119,36 @@
 ***Beta 1.21 - Quick Update 2***
 -> Fixed a major bug that affects **Early Assault**, **Push**, and **Chain Breaker**
 -> Fixed a couple of visual bugs
+
+**Beta 2.0 - Reworked & Rewritten Update 2**
+-> Rewritten the code a second time
+=-> This includes reworking the structure of the program's code
+=-> The new feature to auto-update the bot and the third-party libraries (via GitHub and pip) on startup has been added
+-> Implemented an economy system (Part 1)
+-> Enhanced scoring with Wins/Losses rates
+-> Some leaderboard changes:
+=-> Increased the size from Top 10 to Top 15
+=-> Implemented the MEE6 Leaderboard (Creosphere-only)
+=-> Added emojis (:crown:, :sparkles:^, :star2:, :star:) beside the names of those at Top 3, 4^, 5^, and 7^ (^ MEE6-only)
+=-> Moved the command's cog ("Card Game Commands" -> "Miscellaneous Commands")
+=-> Now requires either `MEE6` or `highscores` to display respective leaderboards
+-> Implemented a battle timeout, which will last for 3 minutes
+=-> If the current player hasn't used a valid Card in the next 3 minutes, the opposing player wins by default
+-> Implemented a new status effect: **Vulnerable**
+=-> Can only be self-inflicted by OHKO Cards
+=-> Prevents the user from using any Card save for **Restore**, which has reduced energy restoration
+-> More Card balancing:
+=-> All OHKO Cards, present and future: Now requires the user to charge power (inflicting Vulnerable in the process)
+==-> Charging ends prematurely (cancelling a pending Card as a result) when the user is Flinching or is Blocked
+=-> **Banishing Slam**: No longer Flinches the target
+=-> **Limit Break**: Now requires 50% of maximum HP for it to work
+-> **Poison** now stacks with other status effects
+-> Drastically reduced Special Card chance again (10% -> 1%)
+-> Embeds now have timestamps attached to the footers (courtesy of libneko)
+-> Made error messages in battles delete after 5 seconds
+-> Fixed the player-based turn counter (it went funky ngl)
+-> The bot now leaves if the server is not Creosphere
+-> Changed the bot's prefix ("c." -> "c+")
+-> Modified changelog once again
+-> Removed `c.surrender`
+-> A handful of bug fixes
