@@ -40,7 +40,7 @@ class Economy(commands.Cog, name = "Economy Commands"):
     
         embed = libneko.Embed(title = f"{user}'s Balance")
         embed.description = f"**Wallet**: :coin: {wallet}\n**Bank**: :coin: {bank}\n**Total Balance**: :coin: {total}"
-        embed.set_thumbnail(url = user.avatar_url)
+        embed.set_thumbnail(url = str(user.avatar_url))
         
         embed.set_footer(icon_url = str(ctx.author.avatar_url), text = f"Invoked by {ctx.author}")
         embed.colour = random.randint(0, 0xffffff)
