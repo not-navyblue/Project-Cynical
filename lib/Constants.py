@@ -25,7 +25,8 @@ level_ranges = {
     "Mesosphere": range(25, 45), 
     "Thermosphere": range(45, 65), 
     "Exosphere": range(65, 100), 
-    "Ionosphere": range(100, 2147483648)
+    "Ionosphere": range(100, 2147483648),
+    "Server-Wide": range(0, 2147483648)
 }
 
 rank_prefix = {
@@ -45,7 +46,8 @@ xp_ranges = {
     "Mesosphere": [42000, 200850], 
     "Thermosphere": [200850, 557700], 
     "Exosphere": [557700, 1899250], 
-    "Ionosphere": [1899250, -1]
+    "Ionosphere": [1899250, -1],
+    "Server-Wide": [0, -1]
 }
 
 bot_mention = {
@@ -82,7 +84,10 @@ def number_format(number: float):
     suffix = number_suffix[dividend]
     
     if number <= 999 and number >= -999:
-        return "{:.2f}".format(number)
+        if number % 1 == 0:
+            return f"{number}"
+        else:
+            return "{:.2f}".format(number)
     
     while True:
         divided = number / dividend

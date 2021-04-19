@@ -152,3 +152,15 @@
 -> Modified changelog once again
 -> Removed `c.surrender`
 -> A handful of bug fixes
+
+**Beta 2.1 - Short Overdue Update**
+-> Implemented a new Universal Card: **Counter**
+-> Implemented some new commands for the economy system
+-> Paginated the Cards list
+-> Added the Creosphere-wide MEE6 Leaderboards (limited to Top 10 due to character limit of 2048 characters)
+-> OHKO Cards now have one special bold text in `cardinfo`
+-> MEE6 Leaderboards now refresh every 90 seconds 
+-> Card changes:
+=-> **Push**: No longer affected by **Banishing Shield**
+-> Some bug fixes
+**Note: I haven't tested this extensively, sorry if it's too buggy. Let me know if there are the bugs you may have encountered.**

@@ -12,6 +12,7 @@ from discord.ext import commands
 from discord.ext.commands.errors import CommandError
 
 from lib import Checks, Constants, Converters, battleRewrite as battles
+from lib import dbot
 
 isAlpha = Constants.isAlpha
 rank_prefix = Constants.rank_prefix
@@ -20,7 +21,6 @@ xp_ranges = Constants.xp_ranges
 add = Constants.add
 subtract = Constants.subtract
 number_format = Constants.number_format
-user_check = Checks.user_check
                 
 def sn_add():
     sNum = 0
@@ -47,16 +47,22 @@ def sn_add():
         print("Error operation on file '.sn' (7)")
         return -1
 
+def get_prefix(level: int):
+    leagues = ["Ionosphere", "Exosphere", "Thermosphere", 
+               "Mesosphere", "Stratosphere", "Troposphere", 
+               "Unranked"]
+    
+    for l in leagues:
+        if level in level_ranges[l]:
+            return rank_prefix[l]
+
 class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
-    def __init__(self, bot: commands.Bot, description: str = "(No description for this category of commands.)"):
+    def __init__(self, bot: dbot.Bot, description: str = "(No description for this category of commands.)"):
         self.bot = bot
         self.description = description
     
     @commands.command(aliases = ("clist", "commands"), help = "Shows the list of commands of the bot and this message.\nArguments: [Command Name (case sensitive)]", brief = "Shows this help message.")
     async def help(self, ctx, command: Optional[str]):
-        if not await user_check(ctx, self.bot):
-            return
-
         embed = libneko.Embed(title = "Commands List")
         embed.colour = random.randint(0, 0xffffff)
         
@@ -74,7 +80,7 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
                     isHidden = getattr(a, "hidden", False)
                 
                     if not isHidden:
-                        commandinfo += str(f"\n**{prefix}" + str(a) + f"** - > {shortHelp}")
+                        commandinfo += str(f"\n**{prefix}" + str(a) + f"** --> {shortHelp}")
                     else:
                         pass
                     
@@ -117,9 +123,6 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
     
     @commands.command(hidden = True, help = "Allows the user to make a suggestion.")
     async def suggest(self, ctx, *, args: Optional[str]):
-        if not await user_check(ctx, self.bot):
-            return
-
         sNum = sn_add()
         if sNum == -1:
             await ctx.send("Command failed!")
@@ -145,23 +148,21 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
         await ctx.send(f"Latency is currently at {self.bot.latency * 1000:.2f}ms.")
 
     @commands.command(hidden = True)
-    async def test(self, ctx):
-        if not (await user_check(ctx, self.bot) and Checks.is_developer(ctx, self.bot)):
-            return
-        
+    @commands.is_owner()
+    async def test(self, ctx):        
+        emojis = [str(x) for x in self.bot.get_guild(Constants.ServerIDs[2]).emojis]
         embed = libneko.Embed(title = "test")
         embed.add_field(name = "This is YouTube:", value = "[link](https://www.youtube.com)")
         
+        print(emojis)
         try:
             await ctx.send(content = None, embed = embed)
         except discord.errors.Forbidden:
             await ctx.channel.send(f"{ctx.author.mention}, the bot is unable to send the requested data! Please grant the bot the \"Embed Links\" permission or ask an admin / moderator to do so.")      
     
     @commands.command(aliases = ("terminate", "turnoff", "killbot", "restart"), hidden = True, help = "Shuts down the self.bot. Optional argument ` -- nowait` skips the 15-second delay. Bot developer only.")
+    @commands.is_owner()
     async def shutdown(self, ctx, s: Optional[str]):
-        if not (await user_check(ctx, self.bot) and Checks.is_developer(ctx, self.bot)):
-            return
-
         if s != " -- nowait":
             self.bot.isShuttingDown = True
             await ctx.send("Shutting down in 15 seconds...")
@@ -175,9 +176,6 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
 
     @commands.command(aliases = ("cl", ), help = "Shows the changelog of the self.bot. Page number is optional. Defaults to the latest version of the self.bot.\nArguments: [\"oldest\" / page number]", brief = "Shows the changelog.")
     async def changelog(self, ctx, *, pageNum: Optional[Converters.SafeInt]):
-        if not await user_check(ctx, self.bot):
-            return
-
         embed = libneko.Embed()
         embed.colour = random.randint(0, 0xffffff)
     
@@ -211,17 +209,11 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
             await ctx.channel.send(f"{ctx.author.mention}, the bot is unable to send the requested data! Please grant the bot the \"Embed Links\" permission or ask an admin / moderator to do so.")
 
     @commands.group(name = "leaderboards", aliases = ("leaderboard", "lb"), help = "Displays the leaderboards of Top 15 in either the Creosphere's MEE6 leaderboard, or the high scores leaderboard.", brief = "Display the leaderboards.", invoke_without_command = True)
-    async def leaderboard_group(self, ctx, tp: Optional[str]):
-        if not await user_check(ctx, self.bot):
-            return
-        
+    async def leaderboard_group(self, ctx, tp: Optional[str]):        
         await ctx.send(f"{ctx.author.mention}, please select a leaderboard. It can be `MEE6` or `highscores` (case-insensitive).")
     
     @leaderboard_group.command(name = "scores")
-    async def sub_highscores(self, ctx):
-        if not await user_check(ctx, self.bot):
-            return
-        
+    async def sub_highscores(self, ctx):        
         embed = await battles.get_scores(self.bot, self.bot.eco, ctx.author)
         embed.set_footer(icon_url = str(ctx.author.avatar_url), text = f"Invoked by {ctx.author}")
         embed.colour = random.randint(0, 0xffffff)
@@ -232,15 +224,13 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
             await ctx.send(f"{ctx.author.mention}, the bot is unable to send the requested data! Please grant the bot the \"Embed Links\" permission or ask an admin / moderator to do so.")
     
     @leaderboard_group.command(name = "mee6")
-    async def sub_mee6(self, ctx, args: Optional[str]):
-        if not await user_check(ctx, self.bot):
-            return
-        
+    async def sub_mee6(self, ctx, args: Optional[str]):        
         if self.bot.noMEE6:
             await ctx.send("MEE6 Leaderboards is disabled!")
             return
         
         leaderboard = self.bot.leaderboards
+        top_length = 15
             
         user_details = {}
         for page in leaderboard:
@@ -305,8 +295,11 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
                     args = "troposphere"
                 elif args.lower() in ["unranked", "sphere", "0"]:
                     args = "unranked"
+                elif args.lower() in ["all", "unified", "global", "server", "server-wide"]:
+                    args = "server-wide"
+                    top_length = 10
 
-                if args.title() != league:
+                if args.title() != league and args in ["ionosphere", "exosphere", "thermosphere", "mesosphere", "stratosphere", "troposphere", "unranked", "server-wide"]:
                     league = args.title()
                 else:
                     args = None
@@ -324,6 +317,7 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
             for players in page["players"]:
                 if players["level"] in level_range:
                     league_players.append(players)
+                        
 
         if len(league_players) <= 0:
             if league == "Unranked":
@@ -334,7 +328,7 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
             return
 
         for player in league_players:
-            if iterate >= 15:
+            if iterate >= top_length:
                 break
             else:
                 top15_players.append(player)
@@ -354,6 +348,9 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
             exp_range = f"{number_format(xp_range[0])} - {number_format(xp_range[1] - 1)} XP"
 
         for player in top15_players:
+            if league == "Server-Wide":
+                value += f"{get_prefix(player['level'])}-"
+                
             value += f"{iterate}. **{player['username']}#{player['discriminator']}**"
 
             if iterate == 1:
@@ -391,12 +388,14 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
 
         if level_range == range(0, 5):
             embed.add_field(name = f"Top {iterate - 1} -  Unranked ({exp_range}):", value = value)
+        elif level_range == range(0, 2147483648):
+            embed.add_field(name = f"Top {iterate - 1} -  Server-wide ({exp_range}):", value = value)
         else:
             embed.add_field(name = f"Top {iterate - 1} - {league} League ({exp_range}):", value = value)
 
         description = f"**Full Server Leaderboard**: [Creosphere]({leaderboard[0]['guild']['leaderboard_url']})\n\n"
 
-        if user_league != league:
+        if user_league != league and league != "Server-wide":
             league_players = []
             level_range = level_ranges[user_league]
 
@@ -410,13 +409,16 @@ class Miscellaneous(commands.Cog, name = "Miscellaneous Commands"):
         except:
             user_position = len(league_players) + 1
 
-        if user_league != league:
+        if user_league != league and league != "Server-Wide":
             if user_league != "Unranked":
                 description += f"**Your Ranking** ({user_league} League):\n{user_rank}-"
             else:
                 description += f"**Your Ranking** ({user_league}):\n{user_rank}-"
         else:
-            description += "**Your Ranking**:\n"
+            if league == "Server-Wide":
+                description += f"**Your Ranking**:\n{user_rank}-"
+            else:
+                description += "**Your Ranking**:\n"
 
         if user_position == 1:
             description += f"{user_position}. **{user_name}** :crown:: Level {user_level} ({number_format(user_xp)} XP / {number_format(user_mc)} Messages)"

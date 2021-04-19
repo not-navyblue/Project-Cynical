@@ -1,6 +1,9 @@
-discord.py >= 1.6.0
+discord.py[voice] >= 1.6.0
 python_dotenv >= 0.15.0
 hjson ~= 3.0.2
-aiosqlite == 0.16.1
+aiosqlite
 libneko >= 0.24.9
-mee6_py_api == 0.0.1
+mee6_py_api
+DiscordUtils ~= 1.2.6
+youtube_dl >= 2021.3.3
+pokepy >= 0.4.0

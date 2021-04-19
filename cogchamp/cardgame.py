@@ -7,6 +7,7 @@ import random
 import asyncio
 
 import discord
+import DiscordUtils as discordutils
 import libneko
 from discord.ext import commands
 
@@ -15,7 +16,6 @@ from lib.battleRewrite import Battle
 from lib import Checks, Constants, Converters, battleRewrite as battles
 from lib.dbot import Bot
 
-user_check = Checks.user_check
 add = Constants.add
 subtract = Constants.subtract
 isAlpha = Constants.isAlpha
@@ -184,24 +184,58 @@ async def battle_timeout(ctx: commands.Context, battle: battles.Battle, bot: Bot
         battle.timeout -= 1
 
 # Class
-class CardGameRelated(commands.Cog, name = "Card Game Commands"):
-    def __init__(self, bot: commands.Bot, description: str = "(No description for this category of commands.)"):
+class CardGameRelated(commands.Cog, name = "Codename \"Deck\""):
+    def __init__(self, bot: Bot, description: str = "(No description for this category of commands.)"):
         self.bot = bot
         self.description = description
     
     @commands.command(aliases = ("cards", "list"), help = "Shows the list of Universal and Special Cards available for use.", brief = "Shows the list of Cards.")    
     async def cardlist(self, ctx):
-        if not await user_check(ctx, self.bot):
-            return
-
-        embed = libneko.Embed(title = "List of Cards (sorted by IDs)")
-        embed.set_footer(icon_url = str(ctx.author.avatar_url), text = f"Invoked by {ctx.author}")
-        embed.colour = random.randint(0, 0xffffff)
+        colorhex = random.randint(0, 0xffffff)
+        
+        
+        paginatr = discordutils.Pagination.CustomEmbedPaginator(ctx)
+        
+        paginatr.add_reaction("◀", "back") 
+        paginatr.add_reaction("<:block:812970244222091295>", "clear") #⏹
+        paginatr.add_reaction("▶", "next")
+        
+        embeds = []
         
         stri = ""
-        for x in cards.UniversalCards:
-            stri += f"ID {cards.NormalCards[x].id}: {cards.NormalCards[x].name} (Energy Cost: {cards.NormalCards[x].energycost} Energy)\n"
-        embed.add_field(name = "Normal Cards: ", value = stri)
+        w = True
+        y = 0
+        z = 1
+        aa = 0
+        ab = 1
+        max = len(cards.UniversalCards)
+        
+        pageMax = len(cards.UniversalCards) / 20
+        if pageMax % 1 != 0:
+            pageMax += 1
+        
+        while w:
+            for x in cards.UniversalCards:
+                stri += f"ID {cards.NormalCards[x].id}: **{cards.NormalCards[x].name}** (Energy Cost: {cards.NormalCards[x].energycost} Energy)\n"
+                y += 1
+                aa += 1
+                
+                if y == 20 or aa == max:
+                    embed = libneko.Embed(title = "List of Cards (ascendingly sorted by IDs)")
+                    embed.add_field(name = f"Normal Cards (Page {z}/{int(pageMax)}): ", value = stri)
+                    embed.set_footer(icon_url = str(ctx.author.avatar_url), text = f"Page {ab}/{int(pageMax + 1)}")
+                    embed.colour = colorhex
+            
+                    embeds.append(embed)
+                    y = 0
+                    z += 1
+                    ab += 1
+                    del embed
+                    stri = ""
+
+                if aa == max:
+                    w = False
+                    break
         del stri
         
         stri = ""
@@ -209,28 +243,32 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
             if x == None:
                 pass
             else:
-                stri += f"ID {cards.SpecialCards[x].id}: {cards.SpecialCards[x].name} (Energy Cost: {cards.SpecialCards[x].energycost} Energy)\n"
-        embed.add_field(name = "Special (User-specific) Cards: ", value = stri)
-        embed.colour = random.randint(0, 0xffffff)
-        del stri
+                stri += f"ID {cards.SpecialCards[x].id}: **{cards.SpecialCards[x].name}** (Energy Cost: {cards.SpecialCards[x].energycost} Energy)\n"
+        
+        embed = libneko.Embed(title = "List of Cards (ascendingly sorted by IDs)")
+        embed.set_footer(icon_url = str(ctx.author.avatar_url), text = f"Page {ab}/{int(pageMax + 1)}")
+        embed.add_field(name = "Special Cards: ", value = stri)
+        embed.colour = colorhex
+        embeds.append(embed)
+        
+        del stri, embed
 
         try:
             if random.randint(1, 100) <= 30:
-                await ctx.channel.send(content = random.choice(["Note: Special Cards have a 5% chance of being added to a User's deck, except for their respective Users which have their own Special Card automatically added into their hand.", "Note: Cards in each of the player's decks in battle are randomized.", "Note: The ranges of stats of a player are 20 - 200 for Attack & Defense, and 50 - 150 for Accuracy and Evasion."]), embed = embed)
+                await paginatr.run(embeds)
+                #await ctx.channel.send(content = random.choice(["Note: Special Cards have a 5% chance of being added to a User's deck, except for their respective Users which have their own Special Card automatically added into their hand.", "Note: Cards in each of the player's decks in battle are randomized.", "Note: The ranges of stats of a player are 20 - 200 for Attack & Defense, and 50 - 150 for Accuracy and Evasion."]), embed = embed)
             else:
-                await ctx.channel.send(content = None, embed = embed)
+                await paginatr.run(embeds)
+                #await ctx.channel.send(content = None, embed = embed)
         except discord.errors.Forbidden:
             await ctx.channel.send(f"{ctx.author.mention}, the bot is unable to send the requested data! Please grant the bot the \"Embed Links\" permission or ask an admin / moderator to do so.")
     
     @commands.command(aliases = ("cinfo", ), help = "Displays some more information about a specific Card.\nArguments: [Card Name / Card ID]", brief = "More Card information")
     async def cardinfo(self, ctx, *, cardID: Optional[Converters.SafeInt]):
-        if not await user_check(ctx, self.bot):
-            return
-
         moveInfo = None
-        if type(cardID) is str:
+        if isinstance(cardID, str):
             cardID = cardID.lower()
-        elif type(cardID) is int:
+        elif isinstance(cardID, int):
             pass
         else:
             await ctx.channel.send(f"{ctx.author.mention}, please enter the name or ID of a Card!")
@@ -269,10 +307,13 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
             await ctx.channel.send(f"{ctx.author.mention}, there is no Card with that name or ID!")
             return
         
+        desc = moveInfo.effectDesc
+        
         if moveInfo.power == -1:
-            moveInfo.power = " -- "
+            moveInfo.power = "--"
         elif moveInfo.power == 999:
             moveInfo.power = "OHKO"
+            desc += "** Requires charging in a few turns before use.**"
           
         if moveInfo.id == 11:
             moveInfo.power = "0 or 20 - 50"  
@@ -295,7 +336,7 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
             embed.description = f"**Card Name**: {moveInfo.name} (ID: {moveInfo.id})\n**Classification/s**: {clinfo} [Universal]\n**Card Power**: {moveInfo.power}\n**Accuracy**: {moveInfo.accuracy}%\n**Energy Cost**: {moveInfo.energycost} Energy"
         
         embed.add_field(name = "**Card Description**:", value = f"\"{moveInfo.description}\"")
-        embed.add_field(name = "**Battle Effect/s**:", value = moveInfo.effectDesc)
+        embed.add_field(name = "**Battle Effect/s**:", value = desc)
         
         if moveInfo.isSpecial:
             if moveInfo.originalUser != 0:
@@ -313,10 +354,8 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
             await ctx.channel.send(f"{ctx.author.mention}, I am unable to send the requested data! Please grant the bot the \"Embed Links\" permission or ask an admin / moderator to do so.")
          
     @commands.command(aliases = ("fight", ), help = "Initiates a Card Battle with another member. Requires the challenged user to accept the challenge to start the battle.\n(Note: The bot will refuse to initiate a battle if Creo is the one who's challenged while he is offline.)\nArguments: < Mentioned Member > ", brief = "Starts a battle.")
+    @commands.cooldown(1, 10)
     async def battle(self, ctx, challengee: Optional[discord.Member]):
-        if not await user_check(ctx, self.bot):
-            return
-
         if check_if_started(ctx.channel, self.bot): # If there's a battle ongoing in a channel
             await ctx.send(f"{ctx.author.mention}, there is a battle ongoing!")
             return
@@ -345,9 +384,6 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
             
     @commands.command(hidden = True, help = "Accepts a challenge.")
     async def accept(self, ctx):
-        if not await user_check(ctx, self.bot):
-            return
-
         if check_if_challenged(ctx.author, self.bot):
             if check_if_started(ctx.channel, self.bot):
                 await ctx.send("A battle in this channel has already started!")
@@ -368,9 +404,6 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
     
     @commands.command(hidden = True, help = "Use a Card in a Card Battle.")
     async def use(self, ctx, *, cardUsed: Optional[Converters.SafeInt]):
-        if not await user_check(ctx, self.bot):
-            return
-
         checkB = None
         battle = return_battle(ctx.channel, self.bot)
         
@@ -415,9 +448,6 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
     
     @commands.command(aliases = ("rest", "refresh", "pass", "skip"), hidden = True)
     async def restore(self, ctx):
-        if not await user_check(ctx, self.bot):
-            return
-
         battle = return_battle(ctx.channel, self.bot)
         
         if battle == None:
@@ -435,9 +465,6 @@ class CardGameRelated(commands.Cog, name = "Card Game Commands"):
     
     @commands.command(hidden = True, help = "Display the current summary of the battle.")
     async def summary(self, ctx):
-        if not await user_check(ctx, self.bot):
-            return
-
         battle = return_battle(ctx.channel, self.bot)
         
         if battle == None:

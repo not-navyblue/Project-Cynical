@@ -199,7 +199,7 @@ class LiveDatabase:
             
             return False
             
-    async def edit_money(self, id: int, amount: int, dest: str, action: str):
+    async def edit_money(self, id: int, amount: int, dest: str, action: Literal["add", "subtract", "set"]):
         db = await aiosqlite.connect(self.dir + f"{self.dbname}.db")
         acc = 0
         

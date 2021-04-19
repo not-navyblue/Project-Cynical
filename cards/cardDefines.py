@@ -20,7 +20,8 @@ defensiveCards = {
     "potion of invisibility": Card(5, "Potion of Invisibility", -1, 100, 3, "Makes you invisible.", "Increases evasion by 5%.", "defensive", True),
     "chain": Card(14, "Chain", -1, 80, 3, "```\nUser 1: lol\nUser 2: lol\nUser 3: lol```", "Increases user's Defense by 10%. For each successive use, elevates chain level by 1.", "defensive", True),
     "protect": Card(18, "Protect", -1, 85, 5, "\"I protect the hooman\" - cat", "Greatly reduces an opponent's attack damage by 85%. If it's an OHKO attack, it only reduces the user's HP to 1. If it's a status-applying Card, it cancels it. Lasts one turn. Successive use halves the Card's accuracy. Fails if the user has any status effect.", "defensive", True),
-    "banishing shield": Card(19, "Banishing Shield", -1, 40, 7, "!ban @target, but for self-defense", "Any Card used on the user will automatically fail and be Disabled for use for the rest of the battle. This Card can only be used once, and lasts 2 turns only. Fails if both the user and the target have not used any prior Card or when user has any status effect.", "defense,miscellaneous", True)
+    "banishing shield": Card(19, "Banishing Shield", -1, 40, 7, "!ban @target, but for self-defense", "Any Card used on the user will automatically fail and be Disabled for use for the rest of the battle. This Card can only be used once, and lasts 2 turns only. Fails if both the user and the target have not used any prior Card or when user has any status effect.", "defense,miscellaneous", True),
+    "counter": Card(20, "Counter", -1, 60, 6, "no u", "Counters an opponent's attack on one turn, damaging them by 75% the damage the opposing Card dealt, with a chance of additional damage. Fails if the user has any status effect. Does not counter OHKO Cards.", "defensive,offensive", True)
 }
 
 SupportCards = {
@@ -32,10 +33,11 @@ SupportCards = {
 
 MiscCards = {
     "splash": Card(2, "Splash", -1, 80, 2, "Nothing happens... or was there?", "If the Card hits, has a chance of either flinching the target or dealing 1 HP damage to the target.", "miscellaneous"),
-    "jumpscare": Card(4, "Jumpscare", -1, 80, 3, ":)", "Flinches the target. Also decreases the target's accuracy by 5%, but increases target's evasion by 10%. Fails when used in succession, when either of the target's Accuracy or Evasion can no longer be changed, or when user is currently Blocked.", "miscellaneous"),
+    "jumpscare": Card(4, "Jumpscare", -1, 80, 3, "=)", "Flinches the target. Also decreases the target's accuracy by 5%, but increases target's evasion by 10%. Fails when used in succession, when either of the target's Accuracy or Evasion can no longer be changed, or when user is currently Blocked.", "miscellaneous"),
     "warn": Card(8, "Warn", -1, 60, 5, "!warn @target", "Prevents the target from using a Card for 2 turns. (Inflicts the target with the \"Blocked\" status effect.)", "miscellaneous"),
     "mute": Card(9, "Mute", -1, 50, 6, "!tempmute @target 4d", "Forbids the target from using the previous Card again for 2 - 5 turns. Bypasses all forms of protection. Fails if the target hasn't used a Card at least once. Successive use reduces the Card's accuracy by 75%", "miscellaneous"),
-    "banishing slam": Card(10, "Banishing Slam", -1, 40, 7, "!ban @target", "Disables the last Card used by the target for the duration of the whole battle, and disables this Card from being re-used by user again for the same duration. Fails if target hasn't used a Card at least once. **Does not actually deal damage.**", "miscellaneous")
+    "banishing slam": Card(10, "Banishing Slam", -1, 40, 7, "!ban @target", "Disables the last Card used by the target for the duration of the whole battle, and disables this Card from being re-used by user again for the same duration. Fails if target hasn't used a Card at least once. **Does not actually deal damage.**", "miscellaneous"),
+    "inversion": Card(21, "Inversion", -1, 70, 5, "Egassem a si siht", "Any stat changes to the user will be inverted for 1 - 3 turns.", "miscellaneous", True)
 }
 
 SpecialCards = {
@@ -47,6 +49,7 @@ SpecialCards = {
 }
 
 UniversalCards = []
+FreeCards = []
 SpecialCards_ = []
 AllCards = dict()
 NormalCards = dict()
@@ -54,7 +57,7 @@ NormalCards = dict()
 def initUniversalCards():
     global UniversalCards
     
-    # 1 - 10
+    # 1 - 20
     UniversalCards.append("punch")
     UniversalCards.append("super punch")
     UniversalCards.append("splash")
@@ -65,8 +68,6 @@ def initUniversalCards():
     UniversalCards.append("healing potion")
     UniversalCards.append("warn")
     UniversalCards.append("mute")
-    
-    # 11 - 20
     UniversalCards.append("banishing slam")
     UniversalCards.append("push")
     UniversalCards.append("early assault")
@@ -78,7 +79,21 @@ def initUniversalCards():
     UniversalCards.append("protect")
     UniversalCards.append("banishing shield")
     
+    # 21 - 40
+    UniversalCards.append("counter")
+    #UniversalCards.append("inversion")
+    
     # 1000 should not be included. 
+
+def init_FreeCards():
+    global FreeCards
+    
+    UniversalCards.append("punch")
+    UniversalCards.append("splash")
+    UniversalCards.append("jumpscare")
+    UniversalCards.append("healing potion")
+    UniversalCards.append("push")
+    UniversalCards.append("protect")
 
 def initSpecialCards():
     global SpecialCards_

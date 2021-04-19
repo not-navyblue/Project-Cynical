@@ -1,5 +1,18 @@
+# discord token
 .env
-battleOld.py
+
+# directories
 data/
 __pycache__/
+items/
+cs5/
+
+# other files/file extensions
 notetoself.txt
+*.zip
+
+# python scripts
+main (2).py
+battleOld.py
+music.py
+shop.py
