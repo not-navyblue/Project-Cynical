@@ -138,13 +138,13 @@ bot.loop.run_until_complete(bot.eco.setup_database()) # Ready LiveDB
 
 
 # Cogs and Commands Setup (Bot Setup, Part 2 of 4)
-from cogchamp import misc, cardgame, economy, music
+from cogchamp import misc, cardgame, economy#, music
 
 Cogs = [
     [cardgame.CardGameRelated, "Project Cynical's card game module. The main course of the bot."],
     [economy.Economy, "Project Cynical's economy system, where you can have fun with virtual currency."],
-    [misc.Miscellaneous, "Commands that don't fit anywhere else."],
-    [music.Music, "Project Cynical's music module. Experimental."]
+    [misc.Miscellaneous, "Commands that don't fit anywhere else."]#,
+    #[music.Music, "Project Cynical's music module. Experimental."]
 ]
 
 @bot.command(name = "suscommand", hidden = True, help = "when the exception is sus!")
@@ -183,8 +183,8 @@ async def on_command_error(ctx, error): # deprecated
 async def message_check(ctx: commands.Context):
     await user_check(ctx, bot)
     
-    if ctx.command.cog == music.Music and NO_OPUS:
-        raise Checks.NoOpusLoaded()
+    #if ctx.command.cog == music.Music and NO_OPUS:
+    #    raise Checks.NoOpusLoaded()
 
 @bot.listen()
 async def on_command_error(ctx: commands.Context, error):
