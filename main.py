@@ -32,7 +32,7 @@ else:
     quit(1)
 
 # Global Variables/Functions
-Constants.isAlpha = True
+Constants.isAlpha = False
 hasLoaded = False
 
 add = Constants.add
