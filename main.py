@@ -41,8 +41,8 @@ number_format = Constants.number_format
 isAlpha = Constants.isAlpha
 user_check = Checks.user_check
 
-OPUS_LIBS = ['libopus-0.x86.dll', 'libopus-0.x64.dll', 'libopus-0.dll', 'libopus.so.0', 'libopus.0.dylib']
-NO_OPUS = False
+#OPUS_LIBS = ['libopus-0.x86.dll', 'libopus-0.x64.dll', 'libopus-0.dll', 'libopus.so.0', 'libopus.0.dylib']
+#NO_OPUS = False
 
 # Function Definitions
 # Synchronous Functions
@@ -67,20 +67,20 @@ def sn_ready():
         print(".sn not found.")
         quit(1)
 
-def load_opus_lib(opus_libs = OPUS_LIBS):
-    if opus.is_loaded():
-        return True
+#def load_opus_lib(opus_libs = OPUS_LIBS):
+#    if opus.is_loaded():
+#        return True
 
-    for opus_lib in opus_libs:
-        try:
-            opus.load_opus(opus_lib)
-            print("Opus lib loaded.")
-            return
-        except OSError:
-            pass
+#    for opus_lib in opus_libs:
+#        try:
+#            opus.load_opus(opus_lib)
+#            print("Opus lib loaded.")
+#            return
+#        except OSError:
+#            pass
 
-    print("Could not find any opus lib. Music functionality is disabled.")
-    NO_OPUS = True
+#    print("Could not find any opus lib. Music functionality is disabled.")
+#    NO_OPUS = True
 
 # Asynchronous Functions
 async def leaderboards_init(bot: Bot):
